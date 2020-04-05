@@ -132,82 +132,249 @@ extern const unsigned short cityMap[2048];
 
 extern const unsigned short cityPal[256];
 # 6 "main.c" 2
+# 1 "startScreen.h" 1
+# 22 "startScreen.h"
+extern const unsigned short startScreenTiles[1312];
 
+
+extern const unsigned short startScreenMap[1024];
+
+
+extern const unsigned short startScreenPal[256];
+# 7 "main.c" 2
+# 1 "paused.h" 1
+# 22 "paused.h"
+extern const unsigned short pausedTiles[864];
+
+
+extern const unsigned short pausedMap[1024];
+
+
+extern const unsigned short pausedPal[256];
+# 8 "main.c" 2
+# 1 "instructions.h" 1
+# 22 "instructions.h"
+extern const unsigned short instructionsTiles[3024];
+
+
+extern const unsigned short instructionsMap[1024];
+
+
+extern const unsigned short instructionsPal[256];
+# 9 "main.c" 2
+# 1 "win.h" 1
+# 22 "win.h"
+extern const unsigned short winTiles[912];
+
+
+extern const unsigned short winMap[1024];
+
+
+extern const unsigned short winPal[256];
+# 10 "main.c" 2
+# 1 "lose.h" 1
+# 22 "lose.h"
+extern const unsigned short loseTiles[1088];
+
+
+extern const unsigned short loseMap[1024];
+
+
+extern const unsigned short losePal[256];
+# 11 "main.c" 2
+# 1 "game.h" 1
+
+extern int vOff;
+extern int hOff;
+extern OBJ_ATTR shadowOAM[128];
+
+
+
+
+void initGame();
+void updateGame();
+void drawGame();
+# 12 "main.c" 2
 
 void initialize();
+void initialize();
+
+
+void goToStart();
+void start();
+void goToInstructions();
+void instructions();
+void goToGame();
 void game();
+void goToPause();
+void pause();
+void goToWin();
+void win();
+void goToLose();
+void lose();
+
+
+
+enum {START, GAME, PAUSE, WIN, LOSE, INSTRUCTIONS};
+int state;
 
 
 unsigned short buttons;
 unsigned short oldButtons;
 
 
-unsigned short hOff;
+int hOff;
 
 
 int main() {
-
     initialize();
-
     while(1) {
-
-        game();
-
         oldButtons = buttons;
         buttons = (*(volatile unsigned short *)0x04000130);
+
+        switch(state) {
+
+            case START:
+                start();
+                break;
+            case INSTRUCTIONS:
+                instructions();
+                break;
+            case GAME:
+                game();
+                break;
+            case PAUSE:
+                pause();
+                break;
+            case WIN:
+                win();
+                break;
+            case LOSE:
+                lose();
+                break;
+
+        }
  }
 }
 
 
 void initialize() {
-
-
-
-
-    (*(unsigned short *)0x4000000) = 0 | (1<<9) | (1<<8);
-
-
-
-
+    (*(unsigned short *)0x4000000) = 0 | (1<<10) | (1<<9) | (1<<8);
+    (*(volatile unsigned short*)0x400000A) = (0<<14) | ((0)<<2) | ((28)<<8) | (0<<7);
+    (*(volatile unsigned short*)0x4000008) = (1<<14) | ((1)<<2) | ((30)<<8) | (0<<7);
+    buttons = (*(volatile unsigned short *)0x04000130);
+    goToStart();
+}
+void goToStart() {
+    (*(volatile unsigned short *)0x04000010) = 0;
+    (*(volatile unsigned short *)0x04000014) = 0;
+    DMANow(3, startScreenTiles, &((charblock *)0x6000000)[0], 2624/2);
+    DMANow(3, startScreenMap, &((screenblock *)0x6000000)[28], 2048/2);
+    DMANow(3, startScreenTiles, &((charblock *)0x6000000)[1], 2624/2);
+    DMANow(3, startScreenMap, &((screenblock *)0x6000000)[30], 2048/2);
+    DMANow(3, startScreenPal, ((unsigned short *)0x5000000), 256);
+    waitForVBlank();
+    state = START;
+}
+void start() {
+    if ((!(~(oldButtons)&((1<<3))) && (~buttons & ((1<<3))))){
+        goToGame();
+    }
+    if ((!(~(oldButtons)&((1<<2))) && (~buttons & ((1<<2))))){
+       goToInstructions();
+    }
+}
+void goToInstructions() {
+    (*(volatile unsigned short *)0x04000010) = 0;
+    (*(volatile unsigned short *)0x04000014) = 0;
+    DMANow(3, instructionsTiles, &((charblock *)0x6000000)[0], 6048/2);
+    DMANow(3, instructionsMap, &((screenblock *)0x6000000)[28], 2048/2);
+    DMANow(3, instructionsTiles, &((charblock *)0x6000000)[1], 6048/2);
+    DMANow(3, instructionsMap, &((screenblock *)0x6000000)[30], 2048/2);
+    DMANow(3, instructionsPal, ((unsigned short *)0x5000000), 256);
+    waitForVBlank();
+    state = INSTRUCTIONS;
+}
+void instructions(){
+    if((!(~(oldButtons)&((1<<2))) && (~buttons & ((1<<2))))){
+        goToStart();
+    } else if ((!(~(oldButtons)&((1<<3))) && (~buttons & ((1<<3))))){
+        goToGame();
+    }
+}
+void goToGame() {
     DMANow(3, skyPal, ((unsigned short *)0x5000000), 512/2);
 
-
-    (*(volatile unsigned short*)0x400000A) = (0<<14) | ((0)<<2) | ((28)<<8);
-
     DMANow(3, skyTiles, &((charblock *)0x6000000)[0], 3712/2);
-
     DMANow(3, skyMap, &((screenblock *)0x6000000)[28], 2048/2);
 
-
-    (*(volatile unsigned short*)0x4000008) = (1<<14) | ((1)<<2) | ((30)<<8);
-
     DMANow(3, cityTiles, &((charblock *)0x6000000)[1], 448/2);
-
     DMANow(3, cityMap, &((screenblock *)0x6000000)[30], 4096/2);
 
     hOff = 0;
-
-    buttons = (*(volatile unsigned short *)0x04000130);
+    state = GAME;
 }
 
-
 void game() {
-
-
-    if((~((*(volatile unsigned short *)0x04000130)) & ((1<<5)))) {
-        hOff--;
-    }
-    if((~((*(volatile unsigned short *)0x04000130)) & ((1<<4)))) {
-        hOff++;
-    }
-
+    updateGame();
     waitForVBlank();
+    drawGame();
+    if ((!(~(oldButtons)&((1<<3))) && (~buttons & ((1<<3))))){
+        goToPause();
+    } else if ((!(~(oldButtons)&((1<<0))) && (~buttons & ((1<<0))))){
+        goToWin();
+    } else if ((!(~(oldButtons)&((1<<1))) && (~buttons & ((1<<1))))){
+        goToLose();
+    }
+}
 
-
-
-
-    (*(volatile unsigned short *)0x04000010) = hOff;
-    if (hOff % 2 == 0){
-        (*(volatile unsigned short *)0x04000014) = hOff/2;
+void goToPause(){
+    (*(volatile unsigned short *)0x04000010) = 0;
+    (*(volatile unsigned short *)0x04000014) = 0;
+    DMANow(3, pausedTiles, &((charblock *)0x6000000)[0], 1728/2);
+    DMANow(3, pausedMap, &((screenblock *)0x6000000)[28], 2048/2);
+    DMANow(3, pausedTiles, &((charblock *)0x6000000)[1], 1728/2);
+    DMANow(3, pausedMap, &((screenblock *)0x6000000)[30], 2048/2);
+    DMANow(3, pausedPal, ((unsigned short *)0x5000000), 256);
+    waitForVBlank();
+    state = PAUSE;
+}
+void pause(){
+    if((!(~(oldButtons)&((1<<2))) && (~buttons & ((1<<2))))){
+        goToStart();
+    } else if ((!(~(oldButtons)&((1<<3))) && (~buttons & ((1<<3))))){
+        goToGame();
+    }
+}
+void goToWin(){
+    (*(volatile unsigned short *)0x04000012) = 0;
+    (*(volatile unsigned short *)0x04000012) = 0;
+    DMANow(3, winTiles, &((charblock *)0x6000000)[0], 1824/2);
+    DMANow(3, winMap, &((screenblock *)0x6000000)[28], 2048/2);
+    DMANow(3, winTiles, &((charblock *)0x6000000)[1], 1824/2);
+    DMANow(3, winMap, &((screenblock *)0x6000000)[30], 2048/2);
+    DMANow(3, winPal, ((unsigned short *)0x5000000), 256);
+    waitForVBlank();
+    state = WIN;
+}
+void win(){
+    if((!(~(oldButtons)&((1<<3))) && (~buttons & ((1<<3))))){
+        goToStart();
+    }
+}
+void goToLose(){
+    (*(volatile unsigned short *)0x04000010) = 0;
+    (*(volatile unsigned short *)0x04000014) = 0;
+    DMANow(3, loseTiles, &((charblock *)0x6000000)[0], 2176/2);
+    DMANow(3, loseMap, &((screenblock *)0x6000000)[28], 2048/2);
+    DMANow(3, loseTiles, &((charblock *)0x6000000)[1], 2176/2);
+    DMANow(3, loseMap, &((screenblock *)0x6000000)[30], 2048/2);
+    DMANow(3, losePal, ((unsigned short *)0x5000000), 256);
+    waitForVBlank();
+    state = LOSE;
+}
+void lose(){
+    if((!(~(oldButtons)&((1<<3))) && (~buttons & ((1<<3))))){
+        goToStart();
     }
 }
