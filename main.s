@@ -92,7 +92,7 @@ initialize:
 	@ link register save eliminated.
 	mov	r3, #67108864
 	mov	r1, #7168
-	mov	r0, #1792
+	mov	r0, #768
 	ldr	r2, .L7
 	strh	r1, [r3, #10]	@ movhi
 	strh	r2, [r3, #8]	@ movhi
@@ -439,9 +439,9 @@ goToWin:
 	ldr	r6, .L54
 	ldr	r5, .L54+4
 	ldr	r4, .L54+8
-	strh	r2, [r3, #18]	@ movhi
+	strh	r2, [r3, #16]	@ movhi
 	mov	r1, r6
-	strh	r2, [r3, #18]	@ movhi
+	strh	r2, [r3, #20]	@ movhi
 	mov	r0, #3
 	mov	r3, #912
 	mov	r2, #100663296
@@ -659,7 +659,7 @@ main:
 	@ frame_needed = 0, uses_anonymous_args = 0
 	mov	r3, #67108864
 	mov	r1, #7168
-	mov	r0, #1792
+	mov	r0, #768
 	ldr	r2, .L97
 	push	{r4, r7, fp, lr}
 	strh	r1, [r3, #10]	@ movhi

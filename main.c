@@ -73,7 +73,7 @@ int main() {
 
 // Initialize the game on first launch
 void initialize() {
-    REG_DISPCTL = MODE0 | BG2_ENABLE | BG1_ENABLE | BG0_ENABLE;
+    REG_DISPCTL = MODE0 | BG1_ENABLE | BG0_ENABLE;
     REG_BG1CNT = BG_SIZE_SMALL | BG_CHARBLOCK(0) | BG_SCREENBLOCK(28) | BG_4BPP;
     REG_BG0CNT = BG_SIZE_WIDE | BG_CHARBLOCK(1) | BG_SCREENBLOCK(30) | BG_4BPP;
     buttons = BUTTONS;
@@ -161,8 +161,8 @@ void pause(){
     }
 }
 void goToWin(){
-    REG_BG0VOFF = 0;
-    REG_BG0VOFF = 0;
+    REG_BG0HOFF = 0;
+    REG_BG1HOFF = 0;
     DMANow(3, winTiles, &CHARBLOCK[0], winTilesLen/2);
     DMANow(3, winMap, &SCREENBLOCK[28], winMapLen/2);
     DMANow(3, winTiles, &CHARBLOCK[1], winTilesLen/2);

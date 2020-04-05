@@ -259,7 +259,7 @@ int main() {
 
 
 void initialize() {
-    (*(unsigned short *)0x4000000) = 0 | (1<<10) | (1<<9) | (1<<8);
+    (*(unsigned short *)0x4000000) = 0 | (1<<9) | (1<<8);
     (*(volatile unsigned short*)0x400000A) = (0<<14) | ((0)<<2) | ((28)<<8) | (0<<7);
     (*(volatile unsigned short*)0x4000008) = (1<<14) | ((1)<<2) | ((30)<<8) | (0<<7);
     buttons = (*(volatile unsigned short *)0x04000130);
@@ -347,8 +347,8 @@ void pause(){
     }
 }
 void goToWin(){
-    (*(volatile unsigned short *)0x04000012) = 0;
-    (*(volatile unsigned short *)0x04000012) = 0;
+    (*(volatile unsigned short *)0x04000010) = 0;
+    (*(volatile unsigned short *)0x04000014) = 0;
     DMANow(3, winTiles, &((charblock *)0x6000000)[0], 1824/2);
     DMANow(3, winMap, &((screenblock *)0x6000000)[28], 2048/2);
     DMANow(3, winTiles, &((charblock *)0x6000000)[1], 1824/2);
