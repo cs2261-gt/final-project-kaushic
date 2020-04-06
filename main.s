@@ -92,7 +92,7 @@ initialize:
 	@ link register save eliminated.
 	mov	r3, #67108864
 	mov	r1, #7168
-	mov	r0, #768
+	mov	r0, #4864
 	ldr	r2, .L7
 	strh	r1, [r3, #10]	@ movhi
 	strh	r2, [r3, #8]	@ movhi
@@ -355,45 +355,48 @@ goToPause:
 	mov	r2, #0
 	push	{r4, r5, r6, lr}
 	ldr	r6, .L49
-	ldr	r5, .L49+4
-	ldr	r4, .L49+8
 	strh	r2, [r3, #16]	@ movhi
-	mov	r1, r6
+	ldr	r5, .L49+4
 	strh	r2, [r3, #20]	@ movhi
-	mov	r0, #3
+	ldr	r1, .L49+8
+	mov	lr, pc
+	bx	r1
+	ldr	r4, .L49+12
+	mov	r1, r6
 	mov	r3, #864
 	mov	r2, #100663296
+	mov	r0, #3
 	mov	lr, pc
 	bx	r4
 	mov	r1, r5
 	mov	r3, #1024
-	mov	r0, #3
-	ldr	r2, .L49+12
-	mov	lr, pc
-	bx	r4
-	mov	r1, r6
-	mov	r3, #864
 	mov	r0, #3
 	ldr	r2, .L49+16
 	mov	lr, pc
 	bx	r4
+	mov	r1, r6
+	mov	r3, #864
+	mov	r0, #3
+	ldr	r2, .L49+20
+	mov	lr, pc
+	bx	r4
 	mov	r1, r5
 	mov	r3, #1024
 	mov	r0, #3
-	ldr	r2, .L49+20
+	ldr	r2, .L49+24
 	mov	lr, pc
 	bx	r4
 	mov	r2, #83886080
 	mov	r3, #256
 	mov	r0, #3
-	ldr	r1, .L49+24
+	ldr	r1, .L49+28
 	mov	lr, pc
 	bx	r4
-	ldr	r3, .L49+28
+	ldr	r3, .L49+32
 	mov	lr, pc
 	bx	r3
 	mov	r2, #2
-	ldr	r3, .L49+32
+	ldr	r3, .L49+36
 	pop	{r4, r5, r6, lr}
 	str	r2, [r3]
 	bx	lr
@@ -402,6 +405,7 @@ goToPause:
 .L49:
 	.word	pausedTiles
 	.word	pausedMap
+	.word	hideSprites
 	.word	DMANow
 	.word	100720640
 	.word	100679680
@@ -437,45 +441,48 @@ goToWin:
 	mov	r2, #0
 	push	{r4, r5, r6, lr}
 	ldr	r6, .L54
-	ldr	r5, .L54+4
-	ldr	r4, .L54+8
 	strh	r2, [r3, #16]	@ movhi
-	mov	r1, r6
+	ldr	r5, .L54+4
 	strh	r2, [r3, #20]	@ movhi
-	mov	r0, #3
+	ldr	r1, .L54+8
+	mov	lr, pc
+	bx	r1
+	ldr	r4, .L54+12
+	mov	r1, r6
 	mov	r3, #912
 	mov	r2, #100663296
+	mov	r0, #3
 	mov	lr, pc
 	bx	r4
 	mov	r1, r5
 	mov	r3, #1024
-	mov	r0, #3
-	ldr	r2, .L54+12
-	mov	lr, pc
-	bx	r4
-	mov	r1, r6
-	mov	r3, #912
 	mov	r0, #3
 	ldr	r2, .L54+16
 	mov	lr, pc
 	bx	r4
+	mov	r1, r6
+	mov	r3, #912
+	mov	r0, #3
+	ldr	r2, .L54+20
+	mov	lr, pc
+	bx	r4
 	mov	r1, r5
 	mov	r3, #1024
 	mov	r0, #3
-	ldr	r2, .L54+20
+	ldr	r2, .L54+24
 	mov	lr, pc
 	bx	r4
 	mov	r2, #83886080
 	mov	r3, #256
 	mov	r0, #3
-	ldr	r1, .L54+24
+	ldr	r1, .L54+28
 	mov	lr, pc
 	bx	r4
-	ldr	r3, .L54+28
+	ldr	r3, .L54+32
 	mov	lr, pc
 	bx	r3
 	mov	r2, #3
-	ldr	r3, .L54+32
+	ldr	r3, .L54+36
 	pop	{r4, r5, r6, lr}
 	str	r2, [r3]
 	bx	lr
@@ -484,6 +491,7 @@ goToWin:
 .L54:
 	.word	winTiles
 	.word	winMap
+	.word	hideSprites
 	.word	DMANow
 	.word	100720640
 	.word	100679680
@@ -527,45 +535,48 @@ goToLose:
 	mov	r2, #0
 	push	{r4, r5, r6, lr}
 	ldr	r6, .L62
-	ldr	r5, .L62+4
-	ldr	r4, .L62+8
 	strh	r2, [r3, #16]	@ movhi
-	mov	r1, r6
+	ldr	r5, .L62+4
 	strh	r2, [r3, #20]	@ movhi
-	mov	r0, #3
+	ldr	r1, .L62+8
+	mov	lr, pc
+	bx	r1
+	ldr	r4, .L62+12
+	mov	r1, r6
 	mov	r3, #1088
 	mov	r2, #100663296
+	mov	r0, #3
 	mov	lr, pc
 	bx	r4
 	mov	r1, r5
 	mov	r3, #1024
-	mov	r0, #3
-	ldr	r2, .L62+12
-	mov	lr, pc
-	bx	r4
-	mov	r1, r6
-	mov	r3, #1088
 	mov	r0, #3
 	ldr	r2, .L62+16
 	mov	lr, pc
 	bx	r4
+	mov	r1, r6
+	mov	r3, #1088
+	mov	r0, #3
+	ldr	r2, .L62+20
+	mov	lr, pc
+	bx	r4
 	mov	r1, r5
 	mov	r3, #1024
 	mov	r0, #3
-	ldr	r2, .L62+20
+	ldr	r2, .L62+24
 	mov	lr, pc
 	bx	r4
 	mov	r2, #83886080
 	mov	r3, #256
 	mov	r0, #3
-	ldr	r1, .L62+24
+	ldr	r1, .L62+28
 	mov	lr, pc
 	bx	r4
-	ldr	r3, .L62+28
+	ldr	r3, .L62+32
 	mov	lr, pc
 	bx	r3
 	mov	r2, #4
-	ldr	r3, .L62+32
+	ldr	r3, .L62+36
 	pop	{r4, r5, r6, lr}
 	str	r2, [r3]
 	bx	lr
@@ -574,6 +585,7 @@ goToLose:
 .L62:
 	.word	loseTiles
 	.word	loseMap
+	.word	hideSprites
 	.word	DMANow
 	.word	100720640
 	.word	100679680
@@ -611,11 +623,11 @@ game:
 	tst	r2, #8
 	beq	.L78
 .L65:
-	tst	r3, #1
+	tst	r3, #4
 	beq	.L66
 	ldr	r2, .L81+16
 	ldrh	r2, [r2]
-	tst	r2, #1
+	tst	r2, #4
 	beq	.L79
 .L66:
 	tst	r3, #2
@@ -659,7 +671,7 @@ main:
 	@ frame_needed = 0, uses_anonymous_args = 0
 	mov	r3, #67108864
 	mov	r1, #7168
-	mov	r0, #768
+	mov	r0, #4864
 	ldr	r2, .L97
 	push	{r4, r7, fp, lr}
 	strh	r1, [r3, #10]	@ movhi

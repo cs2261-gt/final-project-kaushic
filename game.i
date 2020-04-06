@@ -926,13 +926,46 @@ int collision(int colA, int rowA, int widthA, int heightA, int colB, int rowB, i
 extern int vOff;
 extern int hOff;
 extern OBJ_ATTR shadowOAM[128];
-
+extern int frameCounter;
 
 
 
 void initGame();
 void updateGame();
 void drawGame();
+void updateBkgd();
+void initDoctor();
+void updateDoctor();
+void drawDoctor();
+void initPill();
+void firePill();
+void updatePill();
+void drawPill();
+
+typedef struct {
+    int row;
+    int col;
+    int cdel;
+    int rdel;
+    int width;
+    int height;
+    int aniCounter;
+    int aniState;
+    int prevAniState;
+    int curFrame;
+    int numFrames;
+    int pillTimer;
+} DOCSPRITE;
+
+typedef struct {
+    int row;
+    int col;
+    int cdel;
+    int rdel;
+    int width;
+    int height;
+    int active;
+}PILL;
 # 4 "game.c" 2
 # 1 "sky.h" 1
 # 22 "sky.h"
@@ -954,9 +987,21 @@ extern const unsigned short cityMap[2048];
 
 extern const unsigned short cityPal[256];
 # 6 "game.c" 2
+# 1 "spritesheet.h" 1
+# 21 "spritesheet.h"
+extern const unsigned short spritesheetTiles[6144];
+
+
+extern const unsigned short spritesheetPal[256];
+# 7 "game.c" 2
 
 OBJ_ATTR shadowOAM[128];
+DOCSPRITE doctor;
+PILL pill;
 
+enum {SPRITEIDLE, SPRITERIGHT,SPRITELEFT};
+
+int frameCounter;
 
 void initGame() {
  DMANow(3, skyPal, ((unsigned short *)0x5000000), 512/2);
@@ -967,27 +1012,111 @@ void initGame() {
     DMANow(3, cityTiles, &((charblock *)0x6000000)[1], 448/2);
     DMANow(3, cityMap, &((screenblock *)0x6000000)[30], 4096/2);
 
-    hOff = 0;
+ DMANow(3, spritesheetPal, ((unsigned short *)0x5000200), 512/2);
+ DMANow(3, spritesheetTiles, &((charblock *)0x6000000)[4], 12288/2);
 
+ hOff = 0;
+ frameCounter = 0;
     hideSprites();
+ initDoctor();
 }
 void updateGame(){
- if((~((*(volatile unsigned short *)0x04000130)) & ((1<<5)))) {
-        hOff--;
-    }
-    if((~((*(volatile unsigned short *)0x04000130)) & ((1<<4)))) {
-        hOff++;
-    }
-
+ frameCounter++;
+ updateBkgd();
+ updateDoctor();
+}
+void drawGame(){
+ waitForVBlank();
+ drawDoctor();
+ DMANow(3, shadowOAM, ((OBJ_ATTR*)(0x7000000)), 128 * 8);
+}
+void updateBkgd(){
     waitForVBlank();
-
     (*(volatile unsigned short *)0x04000010) = hOff;
     if (hOff % 2 == 0){
         (*(volatile unsigned short *)0x04000014) = hOff/2;
     }
 }
+void initDoctor(){
+ doctor.height = 32;
+ doctor.width = 32;
+ doctor.cdel = 32;
+ doctor.rdel = 32;
+ doctor.col = 240 / 2;
+ doctor.row = 160 / 2;
+ doctor.aniCounter = 0;
+ doctor.curFrame = 0;
+ doctor.numFrames = 3;
+ doctor.aniState = SPRITERIGHT;
+ doctor.pillTimer = 16;
+}
+void updateDoctor(){
+ if (doctor.aniState != SPRITEIDLE){
+  doctor.prevAniState = doctor.aniState;
+  doctor.aniState = SPRITEIDLE;
+ }
 
-void drawGame(){
+ if (doctor.aniCounter % 10 == 0) {
+  if (doctor.curFrame < doctor.numFrames - 1){
+   doctor.curFrame += 1;
+  } else {
+   doctor.curFrame = 0;
+  }
+ }
+
+ if((~((*(volatile unsigned short *)0x04000130)) & ((1<<4)))){
+  doctor.aniState = SPRITERIGHT;
+  hOff++;
+ }
+ if((~((*(volatile unsigned short *)0x04000130)) & ((1<<5)))){
+  doctor.aniState = SPRITELEFT;
+  hOff--;
+ }
+
+ if (doctor.aniState == SPRITEIDLE){
+            doctor.curFrame = 0;
+            doctor.aniState = doctor.prevAniState;
+        } else {
+            doctor.aniCounter += 1;
+    }
+
+ if ((!(~(oldButtons)&((1<<0))) && (~buttons & ((1<<0)))) && doctor.pillTimer >= 16){
+  firePill();
+  doctor.pillTimer = 0;
+ }
+ doctor.pillTimer++;
+}
+void drawDoctor(){
+ shadowOAM[0].attr0 = doctor.row | (0<<13) | (0<<14);
+ shadowOAM[0].attr1 = doctor.col | (2<<14);
+ shadowOAM[0].attr2 = ((doctor.aniState * 4)*32+(doctor.curFrame * 4));
  waitForVBlank();
- DMANow(3, shadowOAM, ((OBJ_ATTR*)(0x7000000)), 128 * 8);
+}
+void initPill(){
+ pill.height = 8;
+ pill.width = 8;
+ pill.cdel = 8;
+ pill.rdel = 8;
+ pill.col = doctor.col + doctor.width;
+ pill.row = doctor.row + doctor.height / 2;
+ pill.active = 0;
+}
+void firePill(){
+ if (pill.active == 0){
+  pill.active = 1;
+ }
+}
+void updatePill(){
+ if (pill.active == 1){
+  pill.col += pill.cdel;
+  if (pill.col > 240){
+   pill.active = 0;
+  }
+ }
+}
+void drawPill(){
+ shadowOAM[1].attr0 = pill.row | (0<<13) | (0<<14);
+ shadowOAM[1].attr1 = pill.col | (2<<14);
+ shadowOAM[1].attr2 = ((16)*32+(4));
+ waitForVBlank();
 }

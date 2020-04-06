@@ -187,13 +187,46 @@ extern const unsigned short losePal[256];
 extern int vOff;
 extern int hOff;
 extern OBJ_ATTR shadowOAM[128];
-
+extern int frameCounter;
 
 
 
 void initGame();
 void updateGame();
 void drawGame();
+void updateBkgd();
+void initDoctor();
+void updateDoctor();
+void drawDoctor();
+void initPill();
+void firePill();
+void updatePill();
+void drawPill();
+
+typedef struct {
+    int row;
+    int col;
+    int cdel;
+    int rdel;
+    int width;
+    int height;
+    int aniCounter;
+    int aniState;
+    int prevAniState;
+    int curFrame;
+    int numFrames;
+    int pillTimer;
+} DOCSPRITE;
+
+typedef struct {
+    int row;
+    int col;
+    int cdel;
+    int rdel;
+    int width;
+    int height;
+    int active;
+}PILL;
 # 12 "main.c" 2
 
 void initialize();
@@ -259,7 +292,7 @@ int main() {
 
 
 void initialize() {
-    (*(unsigned short *)0x4000000) = 0 | (1<<9) | (1<<8);
+    (*(unsigned short *)0x4000000) = 0 | (1<<9) | (1<<8) | (1<<12);
     (*(volatile unsigned short*)0x400000A) = (0<<14) | ((0)<<2) | ((28)<<8) | (0<<7);
     (*(volatile unsigned short*)0x4000008) = (1<<14) | ((1)<<2) | ((30)<<8) | (0<<7);
     buttons = (*(volatile unsigned short *)0x04000130);
@@ -321,7 +354,7 @@ void game() {
     drawGame();
     if ((!(~(oldButtons)&((1<<3))) && (~buttons & ((1<<3))))){
         goToPause();
-    } else if ((!(~(oldButtons)&((1<<0))) && (~buttons & ((1<<0))))){
+    } else if ((!(~(oldButtons)&((1<<2))) && (~buttons & ((1<<2))))){
         goToWin();
     } else if ((!(~(oldButtons)&((1<<1))) && (~buttons & ((1<<1))))){
         goToLose();
@@ -331,6 +364,7 @@ void game() {
 void goToPause(){
     (*(volatile unsigned short *)0x04000010) = 0;
     (*(volatile unsigned short *)0x04000014) = 0;
+    hideSprites();
     DMANow(3, pausedTiles, &((charblock *)0x6000000)[0], 1728/2);
     DMANow(3, pausedMap, &((screenblock *)0x6000000)[28], 2048/2);
     DMANow(3, pausedTiles, &((charblock *)0x6000000)[1], 1728/2);
@@ -349,6 +383,7 @@ void pause(){
 void goToWin(){
     (*(volatile unsigned short *)0x04000010) = 0;
     (*(volatile unsigned short *)0x04000014) = 0;
+    hideSprites();
     DMANow(3, winTiles, &((charblock *)0x6000000)[0], 1824/2);
     DMANow(3, winMap, &((screenblock *)0x6000000)[28], 2048/2);
     DMANow(3, winTiles, &((charblock *)0x6000000)[1], 1824/2);
@@ -365,6 +400,7 @@ void win(){
 void goToLose(){
     (*(volatile unsigned short *)0x04000010) = 0;
     (*(volatile unsigned short *)0x04000014) = 0;
+    hideSprites();
     DMANow(3, loseTiles, &((charblock *)0x6000000)[0], 2176/2);
     DMANow(3, loseMap, &((screenblock *)0x6000000)[28], 2048/2);
     DMANow(3, loseTiles, &((charblock *)0x6000000)[1], 2176/2);

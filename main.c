@@ -73,7 +73,7 @@ int main() {
 
 // Initialize the game on first launch
 void initialize() {
-    REG_DISPCTL = MODE0 | BG1_ENABLE | BG0_ENABLE;
+    REG_DISPCTL = MODE0 | BG1_ENABLE | BG0_ENABLE | SPRITE_ENABLE;
     REG_BG1CNT = BG_SIZE_SMALL | BG_CHARBLOCK(0) | BG_SCREENBLOCK(28) | BG_4BPP;
     REG_BG0CNT = BG_SIZE_WIDE | BG_CHARBLOCK(1) | BG_SCREENBLOCK(30) | BG_4BPP;
     buttons = BUTTONS;
@@ -135,7 +135,7 @@ void game() {
     drawGame();
     if (BUTTON_PRESSED(BUTTON_START)){
         goToPause();
-    } else if (BUTTON_PRESSED(BUTTON_A)){
+    } else if (BUTTON_PRESSED(BUTTON_SELECT)){
         goToWin();
     } else if (BUTTON_PRESSED(BUTTON_B)){
         goToLose();
@@ -145,6 +145,7 @@ void game() {
 void goToPause(){
     REG_BG0HOFF = 0;
     REG_BG1HOFF = 0;
+    hideSprites();
     DMANow(3, pausedTiles, &CHARBLOCK[0], pausedTilesLen/2);
     DMANow(3, pausedMap, &SCREENBLOCK[28], pausedMapLen/2);
     DMANow(3, pausedTiles, &CHARBLOCK[1], pausedTilesLen/2);
@@ -163,6 +164,7 @@ void pause(){
 void goToWin(){
     REG_BG0HOFF = 0;
     REG_BG1HOFF = 0;
+    hideSprites();
     DMANow(3, winTiles, &CHARBLOCK[0], winTilesLen/2);
     DMANow(3, winMap, &SCREENBLOCK[28], winMapLen/2);
     DMANow(3, winTiles, &CHARBLOCK[1], winTilesLen/2);
@@ -179,6 +181,7 @@ void win(){
 void goToLose(){
     REG_BG0HOFF = 0;
     REG_BG1HOFF = 0;
+    hideSprites();
     DMANow(3, loseTiles, &CHARBLOCK[0], loseTilesLen/2);
     DMANow(3, loseMap, &SCREENBLOCK[28], loseMapLen/2);
     DMANow(3, loseTiles, &CHARBLOCK[1], loseTilesLen/2);
