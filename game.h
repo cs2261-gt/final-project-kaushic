@@ -1,23 +1,3 @@
-// Variables
-extern int vOff;
-extern int hOff;
-extern OBJ_ATTR shadowOAM[128];
-extern int frameCounter;
-
-
-//Prototypes
-void initGame();
-void updateGame();
-void drawGame();
-void updateBkgd();
-void initDoctor();
-void updateDoctor();
-void drawDoctor();
-void initPill();
-void firePill();
-void updatePill();
-void drawPill();
-
 typedef struct {
     int row;
     int col;
@@ -42,3 +22,26 @@ typedef struct {
     int height;
     int active;
 }PILL;
+
+//Constants
+#define PILLCOUNT 5
+
+// Variables
+extern int vOff;
+extern int hOff;
+extern OBJ_ATTR shadowOAM[128];
+extern int frameCounter;
+extern PILL pills[PILLCOUNT];
+
+//Prototypes
+void initGame();
+void updateGame();
+void drawGame();
+void updateBkgd();
+void initDoctor();
+void updateDoctor();
+void drawDoctor();
+void initPill();
+void firePill();
+void updatePill(PILL *);
+void drawPill(PILL *);

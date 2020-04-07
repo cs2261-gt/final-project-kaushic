@@ -1,7 +1,5 @@
 #include "myLib.h"
-// TODO 2.0
 #include "sky.h"
-// TODO 4.0
 #include "city.h"
 #include "startScreen.h"
 #include "paused.h"
@@ -9,6 +7,7 @@
 #include "win.h"
 #include "lose.h"
 #include "game.h"
+
 // Prototypes
 void initialize();
 void initialize();
@@ -93,6 +92,7 @@ void goToStart() {
 void start() {
     if (BUTTON_PRESSED(BUTTON_START)){
         goToGame();
+        initGame();
     } 
     if (BUTTON_PRESSED(BUTTON_SELECT)){
        goToInstructions();
@@ -114,6 +114,7 @@ void instructions(){
         goToStart();
     } else if (BUTTON_PRESSED(BUTTON_START)){
         goToGame();
+        initGame();
     }
 }
 void goToGame() {
@@ -124,7 +125,7 @@ void goToGame() {
     
     DMANow(3, cityTiles, &CHARBLOCK[1], cityTilesLen/2);
     DMANow(3, cityMap, &SCREENBLOCK[30], cityMapLen/2);
-    
+    hideSprites();
     hOff = 0;
     state = GAME;
 }
@@ -140,6 +141,7 @@ void game() {
     } else if (BUTTON_PRESSED(BUTTON_B)){
         goToLose();
     }
+    DMANow(3,shadowOAM, OAM, 512);
 }
 
 void goToPause(){

@@ -7,9 +7,9 @@
 
 OBJ_ATTR shadowOAM[128];
 DOCSPRITE doctor;
-PILL pill;
+PILL pills[PILLCOUNT];
 
-enum {SPRITEIDLE, SPRITERIGHT,SPRITELEFT};
+enum {SPRITERIGHT,SPRITELEFT, SPRITEIDLE, SPRITESHIELDRIGHT, SPRITESHIELDLEFT};
 
 int frameCounter;
 
@@ -27,18 +27,24 @@ void initGame() {
     
 	hOff = 0;
 	frameCounter = 0;
-   	hideSprites();
+   	//hideSprites();
 	initDoctor();
+	initPill();
 }
 void updateGame(){
 	frameCounter++;
 	updateBkgd();
 	updateDoctor();
+	for (int i = 0; i < PILLCOUNT; i++){
+		updatePill(&pills[i]);
+	}
 }
 void drawGame(){
 	waitForVBlank();
 	drawDoctor();
-	DMANow(3, shadowOAM, OAM, 128 * 8);
+	for (int i = 0; i < PILLCOUNT; i++){
+		drawPill(&pills[i]);
+	}
 }
 void updateBkgd(){
     waitForVBlank();
@@ -50,10 +56,10 @@ void updateBkgd(){
 void initDoctor(){
 	doctor.height = 32;
 	doctor.width = 32;
-	doctor.cdel = 32;
-	doctor.rdel = 32;
-	doctor.col = SCREENWIDTH / 2;
-	doctor.row = SCREENHEIGHT / 2;
+	doctor.cdel = 1;
+	doctor.rdel = 1;
+	doctor.col = doctor.width / 2;
+	doctor.row = SCREENHEIGHT - doctor.height;
 	doctor.aniCounter = 0;
 	doctor.curFrame = 0;
 	doctor.numFrames = 3;
@@ -77,10 +83,23 @@ void updateDoctor(){
 	if(BUTTON_HELD(BUTTON_RIGHT)){
 		doctor.aniState = SPRITERIGHT;
 		hOff++;
+		if (doctor.col + doctor.width - 1 < SCREENWIDTH - doctor.cdel){
+			doctor.col += doctor.cdel;
+			if (doctor.col == SCREENWIDTH - doctor.width){
+				doctor.col = 0;
+			}
+		}
+		
 	}
 	if(BUTTON_HELD(BUTTON_LEFT)){
 		doctor.aniState = SPRITELEFT;
 		hOff--;
+		if (doctor.col >= doctor.cdel){
+			doctor.col 	-= doctor.cdel;
+		}
+		 if (doctor.col == 2){
+			 doctor.col = SCREENWIDTH - doctor.width;
+		 }
 	}
 
 	if (doctor.aniState == SPRITEIDLE){
@@ -103,30 +122,47 @@ void drawDoctor(){
 	waitForVBlank();
 }
 void initPill(){
-	pill.height = 8;
-	pill.width = 8;
-	pill.cdel = 8;
-	pill.rdel = 8;
-	pill.col = doctor.col + doctor.width;
-	pill.row = doctor.row + doctor.height / 2;
-	pill.active = 0;
+	for (int i = 0; i < PILLCOUNT; i++){
+		pills[i].height = 8;
+		pills[i].width = 8;
+		pills[i].cdel = 8;
+		pills[i].rdel = 8;
+		pills[i].col = 0;
+		pills[i].row = -SCREENHEIGHT - 35;
+		pills[i].active = 0;
+	}	
 }
 void firePill(){
-	if (pill.active == 0){
-		pill.active = 1;
+	for (int i = 0; i < PILLCOUNT; i++){
+		if (!pills[i].active){
+			pills[i].row = SCREENHEIGHT - 35;
+			if (doctor.aniState == SPRITERIGHT){
+				pills[i].col = doctor.col;
+				pills[i].cdel = 8;
+			} else if (doctor.aniState == SPRITELEFT){
+				pills[i].col = doctor.col - 18;
+				pills[i].cdel = -8;
+			}
+			pills[i].active = 1;
+			break;
+		}
 	}
 }
-void updatePill(){
-	if (pill.active == 1){
-		pill.col += pill.cdel;
-		if (pill.col > SCREENWIDTH){
-			pill.active = 0;
+void updatePill(PILL *p){
+	if (p-> active){
+		if (p->col + p->cdel > 0
+            && p->col + p->cdel < SCREENWIDTH-1) {
+				p->col += p->cdel;
 		}
+	} else {
+		p->active = 0;
 	} 
 }
-void drawPill(){
-	shadowOAM[1].attr0 = pill.row | ATTR0_4BPP | ATTR0_SQUARE;
-	shadowOAM[1].attr1 = pill.col | ATTR1_MEDIUM;
-	shadowOAM[1].attr2 = ATTR2_TILEID(4,16);
-	waitForVBlank();
+void drawPill(PILL * p){
+	if (p->active){
+		shadowOAM[1].attr0 = p->row | ATTR0_4BPP | ATTR0_SQUARE;
+		shadowOAM[1].attr1 = p->col | ATTR1_MEDIUM;
+		shadowOAM[1].attr2 = ATTR2_TILEID(4,16);
+		waitForVBlank();
+	}
 }

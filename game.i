@@ -922,26 +922,6 @@ typedef struct{
 int collision(int colA, int rowA, int widthA, int heightA, int colB, int rowB, int widthB, int heightB);
 # 3 "game.c" 2
 # 1 "game.h" 1
-
-extern int vOff;
-extern int hOff;
-extern OBJ_ATTR shadowOAM[128];
-extern int frameCounter;
-
-
-
-void initGame();
-void updateGame();
-void drawGame();
-void updateBkgd();
-void initDoctor();
-void updateDoctor();
-void drawDoctor();
-void initPill();
-void firePill();
-void updatePill();
-void drawPill();
-
 typedef struct {
     int row;
     int col;
@@ -966,6 +946,29 @@ typedef struct {
     int height;
     int active;
 }PILL;
+
+
+
+
+
+extern int vOff;
+extern int hOff;
+extern OBJ_ATTR shadowOAM[128];
+extern int frameCounter;
+extern PILL pills[5];
+
+
+void initGame();
+void updateGame();
+void drawGame();
+void updateBkgd();
+void initDoctor();
+void updateDoctor();
+void drawDoctor();
+void initPill();
+void firePill();
+void updatePill(PILL *);
+void drawPill(PILL *);
 # 4 "game.c" 2
 # 1 "sky.h" 1
 # 22 "sky.h"
@@ -989,7 +992,7 @@ extern const unsigned short cityPal[256];
 # 6 "game.c" 2
 # 1 "spritesheet.h" 1
 # 21 "spritesheet.h"
-extern const unsigned short spritesheetTiles[6144];
+extern const unsigned short spritesheetTiles[16384];
 
 
 extern const unsigned short spritesheetPal[256];
@@ -997,9 +1000,9 @@ extern const unsigned short spritesheetPal[256];
 
 OBJ_ATTR shadowOAM[128];
 DOCSPRITE doctor;
-PILL pill;
+PILL pills[5];
 
-enum {SPRITEIDLE, SPRITERIGHT,SPRITELEFT};
+enum {SPRITERIGHT,SPRITELEFT, SPRITEIDLE, SPRITESHIELDRIGHT, SPRITESHIELDLEFT};
 
 int frameCounter;
 
@@ -1013,22 +1016,28 @@ void initGame() {
     DMANow(3, cityMap, &((screenblock *)0x6000000)[30], 4096/2);
 
  DMANow(3, spritesheetPal, ((unsigned short *)0x5000200), 512/2);
- DMANow(3, spritesheetTiles, &((charblock *)0x6000000)[4], 12288/2);
+ DMANow(3, spritesheetTiles, &((charblock *)0x6000000)[4], 32768/2);
 
  hOff = 0;
  frameCounter = 0;
-    hideSprites();
+
  initDoctor();
+ initPill();
 }
 void updateGame(){
  frameCounter++;
  updateBkgd();
  updateDoctor();
+ for (int i = 0; i < 5; i++){
+  updatePill(&pills[i]);
+ }
 }
 void drawGame(){
  waitForVBlank();
  drawDoctor();
- DMANow(3, shadowOAM, ((OBJ_ATTR*)(0x7000000)), 128 * 8);
+ for (int i = 0; i < 5; i++){
+  drawPill(&pills[i]);
+ }
 }
 void updateBkgd(){
     waitForVBlank();
@@ -1040,10 +1049,10 @@ void updateBkgd(){
 void initDoctor(){
  doctor.height = 32;
  doctor.width = 32;
- doctor.cdel = 32;
- doctor.rdel = 32;
- doctor.col = 240 / 2;
- doctor.row = 160 / 2;
+ doctor.cdel = 1;
+ doctor.rdel = 1;
+ doctor.col = doctor.width / 2;
+ doctor.row = 160 - doctor.height;
  doctor.aniCounter = 0;
  doctor.curFrame = 0;
  doctor.numFrames = 3;
@@ -1067,10 +1076,23 @@ void updateDoctor(){
  if((~((*(volatile unsigned short *)0x04000130)) & ((1<<4)))){
   doctor.aniState = SPRITERIGHT;
   hOff++;
+  if (doctor.col + doctor.width - 1 < 240 - doctor.cdel){
+   doctor.col += doctor.cdel;
+   if (doctor.col == 240 - doctor.width){
+    doctor.col = 0;
+   }
+  }
+
  }
  if((~((*(volatile unsigned short *)0x04000130)) & ((1<<5)))){
   doctor.aniState = SPRITELEFT;
   hOff--;
+  if (doctor.col >= doctor.cdel){
+   doctor.col -= doctor.cdel;
+  }
+   if (doctor.col == 2){
+    doctor.col = 240 - doctor.width;
+   }
  }
 
  if (doctor.aniState == SPRITEIDLE){
@@ -1093,30 +1115,47 @@ void drawDoctor(){
  waitForVBlank();
 }
 void initPill(){
- pill.height = 8;
- pill.width = 8;
- pill.cdel = 8;
- pill.rdel = 8;
- pill.col = doctor.col + doctor.width;
- pill.row = doctor.row + doctor.height / 2;
- pill.active = 0;
-}
-void firePill(){
- if (pill.active == 0){
-  pill.active = 1;
+ for (int i = 0; i < 5; i++){
+  pills[i].height = 8;
+  pills[i].width = 8;
+  pills[i].cdel = 8;
+  pills[i].rdel = 8;
+  pills[i].col = 0;
+  pills[i].row = -160 - 35;
+  pills[i].active = 0;
  }
 }
-void updatePill(){
- if (pill.active == 1){
-  pill.col += pill.cdel;
-  if (pill.col > 240){
-   pill.active = 0;
+void firePill(){
+ for (int i = 0; i < 5; i++){
+  if (!pills[i].active){
+   pills[i].row = 160 - 35;
+   if (doctor.aniState == SPRITERIGHT){
+    pills[i].col = doctor.col;
+    pills[i].cdel = 8;
+   } else if (doctor.aniState == SPRITELEFT){
+    pills[i].col = doctor.col - 18;
+    pills[i].cdel = -8;
+   }
+   pills[i].active = 1;
+   break;
   }
  }
 }
-void drawPill(){
- shadowOAM[1].attr0 = pill.row | (0<<13) | (0<<14);
- shadowOAM[1].attr1 = pill.col | (2<<14);
- shadowOAM[1].attr2 = ((16)*32+(4));
- waitForVBlank();
+void updatePill(PILL *p){
+ if (p-> active){
+  if (p->col + p->cdel > 0
+            && p->col + p->cdel < 240 -1) {
+    p->col += p->cdel;
+  }
+ } else {
+  p->active = 0;
+ }
+}
+void drawPill(PILL * p){
+ if (p->active){
+  shadowOAM[1].attr0 = p->row | (0<<13) | (0<<14);
+  shadowOAM[1].attr1 = p->col | (2<<14);
+  shadowOAM[1].attr2 = ((16)*32+(4));
+  waitForVBlank();
+ }
 }

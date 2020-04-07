@@ -110,7 +110,6 @@ typedef struct{
 
 int collision(int colA, int rowA, int widthA, int heightA, int colB, int rowB, int widthB, int heightB);
 # 2 "main.c" 2
-
 # 1 "sky.h" 1
 # 22 "sky.h"
 extern const unsigned short skyTiles[1856];
@@ -120,8 +119,7 @@ extern const unsigned short skyMap[1024];
 
 
 extern const unsigned short skyPal[256];
-# 4 "main.c" 2
-
+# 3 "main.c" 2
 # 1 "city.h" 1
 # 22 "city.h"
 extern const unsigned short cityTiles[224];
@@ -131,7 +129,7 @@ extern const unsigned short cityMap[2048];
 
 
 extern const unsigned short cityPal[256];
-# 6 "main.c" 2
+# 4 "main.c" 2
 # 1 "startScreen.h" 1
 # 22 "startScreen.h"
 extern const unsigned short startScreenTiles[1312];
@@ -141,7 +139,7 @@ extern const unsigned short startScreenMap[1024];
 
 
 extern const unsigned short startScreenPal[256];
-# 7 "main.c" 2
+# 5 "main.c" 2
 # 1 "paused.h" 1
 # 22 "paused.h"
 extern const unsigned short pausedTiles[864];
@@ -151,7 +149,7 @@ extern const unsigned short pausedMap[1024];
 
 
 extern const unsigned short pausedPal[256];
-# 8 "main.c" 2
+# 6 "main.c" 2
 # 1 "instructions.h" 1
 # 22 "instructions.h"
 extern const unsigned short instructionsTiles[3024];
@@ -161,7 +159,7 @@ extern const unsigned short instructionsMap[1024];
 
 
 extern const unsigned short instructionsPal[256];
-# 9 "main.c" 2
+# 7 "main.c" 2
 # 1 "win.h" 1
 # 22 "win.h"
 extern const unsigned short winTiles[912];
@@ -171,7 +169,7 @@ extern const unsigned short winMap[1024];
 
 
 extern const unsigned short winPal[256];
-# 10 "main.c" 2
+# 8 "main.c" 2
 # 1 "lose.h" 1
 # 22 "lose.h"
 extern const unsigned short loseTiles[1088];
@@ -181,7 +179,7 @@ extern const unsigned short loseMap[1024];
 
 
 extern const unsigned short losePal[256];
-# 11 "main.c" 2
+# 9 "main.c" 2
 # 1 "game.h" 1
 
 extern int vOff;
@@ -227,7 +225,8 @@ typedef struct {
     int height;
     int active;
 }PILL;
-# 12 "main.c" 2
+# 10 "main.c" 2
+
 
 void initialize();
 void initialize();
@@ -312,6 +311,7 @@ void goToStart() {
 void start() {
     if ((!(~(oldButtons)&((1<<3))) && (~buttons & ((1<<3))))){
         goToGame();
+        initGame();
     }
     if ((!(~(oldButtons)&((1<<2))) && (~buttons & ((1<<2))))){
        goToInstructions();
@@ -333,6 +333,7 @@ void instructions(){
         goToStart();
     } else if ((!(~(oldButtons)&((1<<3))) && (~buttons & ((1<<3))))){
         goToGame();
+        initGame();
     }
 }
 void goToGame() {
@@ -343,7 +344,7 @@ void goToGame() {
 
     DMANow(3, cityTiles, &((charblock *)0x6000000)[1], 448/2);
     DMANow(3, cityMap, &((screenblock *)0x6000000)[30], 4096/2);
-
+    hideSprites();
     hOff = 0;
     state = GAME;
 }
@@ -359,6 +360,7 @@ void game() {
     } else if ((!(~(oldButtons)&((1<<1))) && (~buttons & ((1<<1))))){
         goToLose();
     }
+    DMANow(3,shadowOAM, ((OBJ_ATTR*)(0x7000000)), 512);
 }
 
 void goToPause(){
