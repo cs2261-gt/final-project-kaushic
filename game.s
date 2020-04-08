@@ -69,7 +69,7 @@ initGame:
 	mov	r5, #32
 	mov	r4, #1
 	mov	lr, #16
-	mov	r7, #128
+	mov	r7, #129
 	mov	r6, #3
 	mov	r2, #8
 	mvn	ip, #194
@@ -230,7 +230,7 @@ initDoctor:
 	push	{r4, lr}
 	mov	r2, #0
 	mov	ip, #32
-	mov	r4, #128
+	mov	r4, #129
 	mov	lr, #3
 	mov	r0, #1
 	mov	r1, #16
@@ -518,24 +518,24 @@ updateGame:
 	strh	r2, [ip, #16]	@ movhi
 	strheq	r3, [ip, #20]	@ movhi
 	bl	updateDoctor
-	mov	ip, #0
+	mov	r0, #0
 	ldr	r3, .L90+8
 	add	r1, r3, #140
 .L87:
 	ldr	r2, [r3, #24]
 	cmp	r2, #0
 	beq	.L84
-	ldmib	r3, {r0, r2}
-	add	r2, r0, r2
-	cmp	r2, #0
+	ldmib	r3, {r2, ip}
+	add	r2, r2, ip
+	cmn	r2, #30
 	str	r2, [r3, #4]
 	blt	.L85
-	ldr	r0, [r3, #16]
-	add	r2, r2, r0
+	ldr	ip, [r3, #16]
+	add	r2, r2, ip
 	cmp	r2, #239
 	ble	.L84
 .L85:
-	str	ip, [r3, #24]
+	str	r0, [r3, #24]
 .L84:
 	add	r3, r3, #28
 	cmp	r3, r1
@@ -565,17 +565,19 @@ updatePill:
 	bxeq	lr
 	ldmib	r0, {r2, r3}
 	add	r3, r2, r3
-	cmp	r3, #0
+	cmn	r3, #30
 	str	r3, [r0, #4]
-	blt	.L95
-	ldr	r2, [r0, #16]
-	add	r3, r3, r2
-	cmp	r3, #239
-	bxle	lr
+	bge	.L97
 .L95:
 	mov	r3, #0
 	str	r3, [r0, #24]
 	bx	lr
+.L97:
+	ldr	r2, [r0, #16]
+	add	r3, r3, r2
+	cmp	r3, #239
+	bxle	lr
+	b	.L95
 	.size	updatePill, .-updatePill
 	.align	2
 	.global	drawPill
@@ -598,14 +600,14 @@ drawPill:
 	mov	r1, #516
 	mvn	r3, r3, lsr #17
 	ldrb	r0, [r0]	@ zero_extendqisi2
-	ldr	r2, .L102
+	ldr	r2, .L103
 	strh	r3, [r2, #10]	@ movhi
 	strh	r0, [r2, #8]	@ movhi
 	strh	r1, [r2, #12]	@ movhi
 	bx	lr
-.L103:
+.L104:
 	.align	2
-.L102:
+.L103:
 	.word	shadowOAM
 	.size	drawPill, .-drawPill
 	.comm	frameCounter,4,4

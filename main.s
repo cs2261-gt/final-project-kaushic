@@ -53,16 +53,25 @@ goToStart:
 	ldr	r2, .L4+20
 	mov	lr, pc
 	bx	r4
-	mov	r3, #256
 	mov	r2, #83886080
 	mov	r0, #3
 	ldr	r1, .L4+24
+	mov	r3, #256
 	mov	lr, pc
 	bx	r4
 	ldr	r3, .L4+28
 	mov	lr, pc
 	bx	r3
 	ldr	r3, .L4+32
+	mov	lr, pc
+	bx	r3
+	mov	r3, #512
+	mov	r2, #117440512
+	mov	r0, #3
+	ldr	r1, .L4+36
+	mov	lr, pc
+	bx	r4
+	ldr	r3, .L4+40
 	str	r5, [r3]
 	pop	{r4, r5, r6, r7, r8, lr}
 	bx	lr
@@ -76,7 +85,9 @@ goToStart:
 	.word	100679680
 	.word	100724736
 	.word	startScreenPal
+	.word	hideSprites
 	.word	waitForVBlank
+	.word	shadowOAM
 	.word	state
 	.size	goToStart, .-goToStart
 	.align	2
@@ -173,16 +184,25 @@ goToInstructions:
 	mov	lr, pc
 	bx	r4
 	mov	r2, #83886080
-	mov	r3, #256
 	mov	r0, #3
 	ldr	r1, .L15+24
+	mov	r3, #256
 	mov	lr, pc
 	bx	r4
 	ldr	r3, .L15+28
 	mov	lr, pc
 	bx	r3
-	mov	r2, #5
 	ldr	r3, .L15+32
+	mov	lr, pc
+	bx	r3
+	mov	r3, #512
+	mov	r2, #117440512
+	mov	r0, #3
+	ldr	r1, .L15+36
+	mov	lr, pc
+	bx	r4
+	mov	r2, #5
+	ldr	r3, .L15+40
 	pop	{r4, r5, r6, lr}
 	str	r2, [r3]
 	bx	lr
@@ -196,7 +216,9 @@ goToInstructions:
 	.word	100679680
 	.word	100724736
 	.word	instructionsPal
+	.word	hideSprites
 	.word	waitForVBlank
+	.word	shadowOAM
 	.word	state
 	.size	goToInstructions, .-goToInstructions
 	.align	2
@@ -244,10 +266,19 @@ goToGame:
 	ldr	r3, .L19+36
 	mov	lr, pc
 	bx	r3
+	ldr	r3, .L19+40
+	mov	lr, pc
+	bx	r3
+	mov	r3, #512
+	mov	r2, #117440512
+	mov	r0, #3
+	ldr	r1, .L19+44
+	mov	lr, pc
+	bx	r4
 	mov	r0, #0
 	mov	r2, #1
-	ldr	r1, .L19+40
-	ldr	r3, .L19+44
+	ldr	r1, .L19+48
+	ldr	r3, .L19+52
 	str	r0, [r1]
 	str	r2, [r3]
 	pop	{r4, lr}
@@ -265,6 +296,8 @@ goToGame:
 	.word	100724736
 	.word	cityMap
 	.word	hideSprites
+	.word	waitForVBlank
+	.word	shadowOAM
 	.word	hOff
 	.word	state
 	.size	goToGame, .-goToGame
@@ -369,48 +402,54 @@ goToPause:
 	mov	r2, #0
 	push	{r4, r5, r6, lr}
 	ldr	r6, .L53
-	strh	r2, [r3, #16]	@ movhi
 	ldr	r5, .L53+4
-	strh	r2, [r3, #20]	@ movhi
-	ldr	r1, .L53+8
-	mov	lr, pc
-	bx	r1
-	ldr	r4, .L53+12
+	ldr	r4, .L53+8
+	strh	r2, [r3, #16]	@ movhi
 	mov	r1, r6
+	strh	r2, [r3, #20]	@ movhi
+	mov	r0, #3
 	mov	r3, #864
 	mov	r2, #100663296
-	mov	r0, #3
 	mov	lr, pc
 	bx	r4
 	mov	r1, r5
 	mov	r3, #1024
+	mov	r0, #3
+	ldr	r2, .L53+12
+	mov	lr, pc
+	bx	r4
+	mov	r1, r6
+	mov	r3, #864
 	mov	r0, #3
 	ldr	r2, .L53+16
 	mov	lr, pc
 	bx	r4
-	mov	r1, r6
-	mov	r3, #864
+	mov	r1, r5
+	mov	r3, #1024
 	mov	r0, #3
 	ldr	r2, .L53+20
 	mov	lr, pc
 	bx	r4
-	mov	r1, r5
-	mov	r3, #1024
-	mov	r0, #3
-	ldr	r2, .L53+24
-	mov	lr, pc
-	bx	r4
 	mov	r2, #83886080
-	mov	r3, #256
 	mov	r0, #3
-	ldr	r1, .L53+28
+	ldr	r1, .L53+24
+	mov	r3, #256
 	mov	lr, pc
 	bx	r4
+	ldr	r3, .L53+28
+	mov	lr, pc
+	bx	r3
 	ldr	r3, .L53+32
 	mov	lr, pc
 	bx	r3
+	mov	r3, #512
+	mov	r2, #117440512
+	mov	r0, #3
+	ldr	r1, .L53+36
+	mov	lr, pc
+	bx	r4
 	mov	r2, #2
-	ldr	r3, .L53+36
+	ldr	r3, .L53+40
 	pop	{r4, r5, r6, lr}
 	str	r2, [r3]
 	bx	lr
@@ -419,13 +458,14 @@ goToPause:
 .L53:
 	.word	pausedTiles
 	.word	pausedMap
-	.word	hideSprites
 	.word	DMANow
 	.word	100720640
 	.word	100679680
 	.word	100724736
 	.word	pausedPal
+	.word	hideSprites
 	.word	waitForVBlank
+	.word	shadowOAM
 	.word	state
 	.size	goToPause, .-goToPause
 	.align	2
@@ -477,48 +517,54 @@ goToWin:
 	mov	r2, #0
 	push	{r4, r5, r6, lr}
 	ldr	r6, .L69
-	strh	r2, [r3, #16]	@ movhi
 	ldr	r5, .L69+4
-	strh	r2, [r3, #20]	@ movhi
-	ldr	r1, .L69+8
-	mov	lr, pc
-	bx	r1
-	ldr	r4, .L69+12
+	ldr	r4, .L69+8
+	strh	r2, [r3, #16]	@ movhi
 	mov	r1, r6
+	strh	r2, [r3, #20]	@ movhi
+	mov	r0, #3
 	mov	r3, #912
 	mov	r2, #100663296
-	mov	r0, #3
 	mov	lr, pc
 	bx	r4
 	mov	r1, r5
 	mov	r3, #1024
+	mov	r0, #3
+	ldr	r2, .L69+12
+	mov	lr, pc
+	bx	r4
+	mov	r1, r6
+	mov	r3, #912
 	mov	r0, #3
 	ldr	r2, .L69+16
 	mov	lr, pc
 	bx	r4
-	mov	r1, r6
-	mov	r3, #912
+	mov	r1, r5
+	mov	r3, #1024
 	mov	r0, #3
 	ldr	r2, .L69+20
 	mov	lr, pc
 	bx	r4
-	mov	r1, r5
-	mov	r3, #1024
-	mov	r0, #3
-	ldr	r2, .L69+24
-	mov	lr, pc
-	bx	r4
 	mov	r2, #83886080
-	mov	r3, #256
 	mov	r0, #3
-	ldr	r1, .L69+28
+	ldr	r1, .L69+24
+	mov	r3, #256
 	mov	lr, pc
 	bx	r4
+	ldr	r3, .L69+28
+	mov	lr, pc
+	bx	r3
 	ldr	r3, .L69+32
 	mov	lr, pc
 	bx	r3
+	mov	r3, #512
+	mov	r2, #117440512
+	mov	r0, #3
+	ldr	r1, .L69+36
+	mov	lr, pc
+	bx	r4
 	mov	r2, #3
-	ldr	r3, .L69+36
+	ldr	r3, .L69+40
 	pop	{r4, r5, r6, lr}
 	str	r2, [r3]
 	bx	lr
@@ -527,13 +573,14 @@ goToWin:
 .L69:
 	.word	winTiles
 	.word	winMap
-	.word	hideSprites
 	.word	DMANow
 	.word	100720640
 	.word	100679680
 	.word	100724736
 	.word	winPal
+	.word	hideSprites
 	.word	waitForVBlank
+	.word	shadowOAM
 	.word	state
 	.size	goToWin, .-goToWin
 	.align	2
@@ -571,48 +618,54 @@ goToLose:
 	mov	r2, #0
 	push	{r4, r5, r6, lr}
 	ldr	r6, .L77
-	strh	r2, [r3, #16]	@ movhi
 	ldr	r5, .L77+4
-	strh	r2, [r3, #20]	@ movhi
-	ldr	r1, .L77+8
-	mov	lr, pc
-	bx	r1
-	ldr	r4, .L77+12
+	ldr	r4, .L77+8
+	strh	r2, [r3, #16]	@ movhi
 	mov	r1, r6
+	strh	r2, [r3, #20]	@ movhi
+	mov	r0, #3
 	mov	r3, #1088
 	mov	r2, #100663296
-	mov	r0, #3
 	mov	lr, pc
 	bx	r4
 	mov	r1, r5
 	mov	r3, #1024
+	mov	r0, #3
+	ldr	r2, .L77+12
+	mov	lr, pc
+	bx	r4
+	mov	r1, r6
+	mov	r3, #1088
 	mov	r0, #3
 	ldr	r2, .L77+16
 	mov	lr, pc
 	bx	r4
-	mov	r1, r6
-	mov	r3, #1088
+	mov	r1, r5
+	mov	r3, #1024
 	mov	r0, #3
 	ldr	r2, .L77+20
 	mov	lr, pc
 	bx	r4
-	mov	r1, r5
-	mov	r3, #1024
-	mov	r0, #3
-	ldr	r2, .L77+24
-	mov	lr, pc
-	bx	r4
 	mov	r2, #83886080
-	mov	r3, #256
 	mov	r0, #3
-	ldr	r1, .L77+28
+	ldr	r1, .L77+24
+	mov	r3, #256
 	mov	lr, pc
 	bx	r4
+	ldr	r3, .L77+28
+	mov	lr, pc
+	bx	r3
 	ldr	r3, .L77+32
 	mov	lr, pc
 	bx	r3
+	mov	r3, #512
+	mov	r2, #117440512
+	mov	r0, #3
+	ldr	r1, .L77+36
+	mov	lr, pc
+	bx	r4
 	mov	r2, #4
-	ldr	r3, .L77+36
+	ldr	r3, .L77+40
 	pop	{r4, r5, r6, lr}
 	str	r2, [r3]
 	bx	lr
@@ -621,13 +674,14 @@ goToLose:
 .L77:
 	.word	loseTiles
 	.word	loseMap
-	.word	hideSprites
 	.word	DMANow
 	.word	100720640
 	.word	100679680
 	.word	100724736
 	.word	losePal
+	.word	hideSprites
 	.word	waitForVBlank
+	.word	shadowOAM
 	.word	state
 	.size	goToLose, .-goToLose
 	.align	2
@@ -667,12 +721,12 @@ game:
 	beq	.L93
 .L80:
 	tst	r3, #4
-	beq	.L82
+	beq	.L81
 	ldr	r2, .L96+24
 	ldrh	r2, [r2]
 	tst	r2, #4
 	beq	.L94
-.L82:
+.L81:
 	tst	r3, #2
 	beq	.L79
 	ldr	r3, .L96+24
@@ -683,12 +737,8 @@ game:
 	pop	{r4, lr}
 	bx	lr
 .L93:
-	bl	goToPause
-	ldr	r3, .L96+28
-	mov	lr, pc
-	bx	r3
 	pop	{r4, lr}
-	bx	lr
+	b	goToPause
 .L94:
 	pop	{r4, lr}
 	b	goToWin
@@ -705,7 +755,6 @@ game:
 	.word	shadowOAM
 	.word	oldButtons
 	.word	buttons
-	.word	hideSprites
 	.size	game, .-game
 	.section	.text.startup,"ax",%progbits
 	.align	2

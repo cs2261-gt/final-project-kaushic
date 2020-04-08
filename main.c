@@ -86,7 +86,9 @@ void goToStart() {
     DMANow(3, startScreenTiles, &CHARBLOCK[1], startScreenTilesLen/2);
     DMANow(3, startScreenMap, &SCREENBLOCK[30], startScreenMapLen/2);
     DMANow(3, startScreenPal, PALETTE, 256);
+    hideSprites(); 
     waitForVBlank();
+    DMANow(3, shadowOAM, OAM, 512);
     state = START;
 }
 void start() {
@@ -106,7 +108,9 @@ void goToInstructions() {
     DMANow(3, instructionsTiles, &CHARBLOCK[1], instructionsTilesLen/2);
     DMANow(3, instructionsMap, &SCREENBLOCK[30], instructionsMapLen/2);
     DMANow(3, instructionsPal, PALETTE, 256);
+    hideSprites(); 
     waitForVBlank();
+    DMANow(3, shadowOAM, OAM, 512);
     state = INSTRUCTIONS;
 }
 void instructions(){
@@ -125,7 +129,9 @@ void goToGame() {
     
     DMANow(3, cityTiles, &CHARBLOCK[1], cityTilesLen/2);
     DMANow(3, cityMap, &SCREENBLOCK[30], cityMapLen/2);
-    hideSprites();
+    hideSprites(); 
+    waitForVBlank();
+    DMANow(3, shadowOAM, OAM, 512);
     hOff = 0;
     state = GAME;
 }
@@ -138,7 +144,6 @@ void game() {
 
     if (BUTTON_PRESSED(BUTTON_START)){
         goToPause();
-        hideSprites();
     } else if (BUTTON_PRESSED(BUTTON_SELECT)){
         goToWin();
     } else if (BUTTON_PRESSED(BUTTON_B)){
@@ -149,13 +154,14 @@ void game() {
 void goToPause(){
     REG_BG0HOFF = 0;
     REG_BG1HOFF = 0;
-    hideSprites();
     DMANow(3, pausedTiles, &CHARBLOCK[0], pausedTilesLen/2);
     DMANow(3, pausedMap, &SCREENBLOCK[28], pausedMapLen/2);
     DMANow(3, pausedTiles, &CHARBLOCK[1], pausedTilesLen/2);
     DMANow(3, pausedMap, &SCREENBLOCK[30], pausedMapLen/2);
     DMANow(3, pausedPal, PALETTE, 256);
+    hideSprites(); 
     waitForVBlank();
+    DMANow(3, shadowOAM, OAM, 512);
     state = PAUSE;
 }
 void pause(){
@@ -168,13 +174,14 @@ void pause(){
 void goToWin(){
     REG_BG0HOFF = 0;
     REG_BG1HOFF = 0;
-    hideSprites();
     DMANow(3, winTiles, &CHARBLOCK[0], winTilesLen/2);
     DMANow(3, winMap, &SCREENBLOCK[28], winMapLen/2);
     DMANow(3, winTiles, &CHARBLOCK[1], winTilesLen/2);
     DMANow(3, winMap, &SCREENBLOCK[30], winMapLen/2);
     DMANow(3, winPal, PALETTE, 256);
+    hideSprites(); 
     waitForVBlank();
+    DMANow(3, shadowOAM, OAM, 512);
     state = WIN;
 }
 void win(){
@@ -185,13 +192,14 @@ void win(){
 void goToLose(){
     REG_BG0HOFF = 0;
     REG_BG1HOFF = 0;
-    hideSprites();
     DMANow(3, loseTiles, &CHARBLOCK[0], loseTilesLen/2);
     DMANow(3, loseMap, &SCREENBLOCK[28], loseMapLen/2);
     DMANow(3, loseTiles, &CHARBLOCK[1], loseTilesLen/2);
     DMANow(3, loseMap, &SCREENBLOCK[30], loseMapLen/2);
     DMANow(3, losePal, PALETTE, 256);
+    hideSprites(); 
     waitForVBlank();
+    DMANow(3, shadowOAM, OAM, 512);
     state = LOSE;
 }
 void lose(){

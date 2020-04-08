@@ -308,7 +308,9 @@ void goToStart() {
     DMANow(3, startScreenTiles, &((charblock *)0x6000000)[1], 2624/2);
     DMANow(3, startScreenMap, &((screenblock *)0x6000000)[30], 2048/2);
     DMANow(3, startScreenPal, ((unsigned short *)0x5000000), 256);
+    hideSprites();
     waitForVBlank();
+    DMANow(3, shadowOAM, ((OBJ_ATTR*)(0x7000000)), 512);
     state = START;
 }
 void start() {
@@ -328,7 +330,9 @@ void goToInstructions() {
     DMANow(3, instructionsTiles, &((charblock *)0x6000000)[1], 6048/2);
     DMANow(3, instructionsMap, &((screenblock *)0x6000000)[30], 2048/2);
     DMANow(3, instructionsPal, ((unsigned short *)0x5000000), 256);
+    hideSprites();
     waitForVBlank();
+    DMANow(3, shadowOAM, ((OBJ_ATTR*)(0x7000000)), 512);
     state = INSTRUCTIONS;
 }
 void instructions(){
@@ -348,6 +352,8 @@ void goToGame() {
     DMANow(3, cityTiles, &((charblock *)0x6000000)[1], 448/2);
     DMANow(3, cityMap, &((screenblock *)0x6000000)[30], 4096/2);
     hideSprites();
+    waitForVBlank();
+    DMANow(3, shadowOAM, ((OBJ_ATTR*)(0x7000000)), 512);
     hOff = 0;
     state = GAME;
 }
@@ -360,7 +366,6 @@ void game() {
 
     if ((!(~(oldButtons)&((1<<3))) && (~buttons & ((1<<3))))){
         goToPause();
-        hideSprites();
     } else if ((!(~(oldButtons)&((1<<2))) && (~buttons & ((1<<2))))){
         goToWin();
     } else if ((!(~(oldButtons)&((1<<1))) && (~buttons & ((1<<1))))){
@@ -371,13 +376,14 @@ void game() {
 void goToPause(){
     (*(volatile unsigned short *)0x04000010) = 0;
     (*(volatile unsigned short *)0x04000014) = 0;
-    hideSprites();
     DMANow(3, pausedTiles, &((charblock *)0x6000000)[0], 1728/2);
     DMANow(3, pausedMap, &((screenblock *)0x6000000)[28], 2048/2);
     DMANow(3, pausedTiles, &((charblock *)0x6000000)[1], 1728/2);
     DMANow(3, pausedMap, &((screenblock *)0x6000000)[30], 2048/2);
     DMANow(3, pausedPal, ((unsigned short *)0x5000000), 256);
+    hideSprites();
     waitForVBlank();
+    DMANow(3, shadowOAM, ((OBJ_ATTR*)(0x7000000)), 512);
     state = PAUSE;
 }
 void pause(){
@@ -390,13 +396,14 @@ void pause(){
 void goToWin(){
     (*(volatile unsigned short *)0x04000010) = 0;
     (*(volatile unsigned short *)0x04000014) = 0;
-    hideSprites();
     DMANow(3, winTiles, &((charblock *)0x6000000)[0], 1824/2);
     DMANow(3, winMap, &((screenblock *)0x6000000)[28], 2048/2);
     DMANow(3, winTiles, &((charblock *)0x6000000)[1], 1824/2);
     DMANow(3, winMap, &((screenblock *)0x6000000)[30], 2048/2);
     DMANow(3, winPal, ((unsigned short *)0x5000000), 256);
+    hideSprites();
     waitForVBlank();
+    DMANow(3, shadowOAM, ((OBJ_ATTR*)(0x7000000)), 512);
     state = WIN;
 }
 void win(){
@@ -407,13 +414,14 @@ void win(){
 void goToLose(){
     (*(volatile unsigned short *)0x04000010) = 0;
     (*(volatile unsigned short *)0x04000014) = 0;
-    hideSprites();
     DMANow(3, loseTiles, &((charblock *)0x6000000)[0], 2176/2);
     DMANow(3, loseMap, &((screenblock *)0x6000000)[28], 2048/2);
     DMANow(3, loseTiles, &((charblock *)0x6000000)[1], 2176/2);
     DMANow(3, loseMap, &((screenblock *)0x6000000)[30], 2048/2);
     DMANow(3, losePal, ((unsigned short *)0x5000000), 256);
+    hideSprites();
     waitForVBlank();
+    DMANow(3, shadowOAM, ((OBJ_ATTR*)(0x7000000)), 512);
     state = LOSE;
 }
 void lose(){

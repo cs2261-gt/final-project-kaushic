@@ -57,7 +57,7 @@ void initDoctor(){
 	doctor.cdel = 1;
 	doctor.rdel = 1;
 	doctor.col = doctor.width / 2;
-	doctor.row = SCREENHEIGHT - doctor.height;
+	doctor.row = SCREENHEIGHT - 31;
 	doctor.aniCounter = 0;
 	doctor.curFrame = 0;
 	doctor.numFrames = 3;
@@ -144,7 +144,7 @@ void updatePill(PILL *p){
 	if (p->active) {
 		p->col += p->cdel;
 		
-		if (p->col < 0 || p->col + p->width > SCREENWIDTH - 1) { 
+		if (p->col < -30 || p->col + p->width > SCREENWIDTH - 1) { 
 			p->active = 0;
 		} 
 	}
