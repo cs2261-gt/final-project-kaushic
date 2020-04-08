@@ -132,16 +132,18 @@ void goToGame() {
 // Update game each frame
 void game() {
     updateGame();
-    waitForVBlank();
     drawGame();
+    waitForVBlank();
+    DMANow(3,shadowOAM, OAM, 512);
+
     if (BUTTON_PRESSED(BUTTON_START)){
         goToPause();
+        hideSprites();
     } else if (BUTTON_PRESSED(BUTTON_SELECT)){
         goToWin();
     } else if (BUTTON_PRESSED(BUTTON_B)){
         goToLose();
     }
-    DMANow(3,shadowOAM, OAM, 512);
 }
 
 void goToPause(){

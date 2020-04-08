@@ -9,7 +9,7 @@ OBJ_ATTR shadowOAM[128];
 DOCSPRITE doctor;
 PILL pills[PILLCOUNT];
 
-enum {SPRITERIGHT,SPRITELEFT, SPRITEIDLE, SPRITESHIELDRIGHT, SPRITESHIELDLEFT};
+enum {SPRITERIGHT,SPRITELEFT, SPRITESHIELDRIGHT,SPRITESHIELDLEFT,SPRITEIDLE};
 
 int frameCounter;
 
@@ -40,14 +40,12 @@ void updateGame(){
 	}
 }
 void drawGame(){
-	waitForVBlank();
 	drawDoctor();
 	for (int i = 0; i < PILLCOUNT; i++){
 		drawPill(&pills[i]);
 	}
 }
 void updateBkgd(){
-    waitForVBlank();
     REG_BG0HOFF = hOff;
     if (hOff % 2 == 0){
         REG_BG1HOFF = hOff/2;
@@ -83,23 +81,18 @@ void updateDoctor(){
 	if(BUTTON_HELD(BUTTON_RIGHT)){
 		doctor.aniState = SPRITERIGHT;
 		hOff++;
+		//character can actually move right on screen
 		if (doctor.col + doctor.width - 1 < SCREENWIDTH - doctor.cdel){
 			doctor.col += doctor.cdel;
-			if (doctor.col == SCREENWIDTH - doctor.width){
-				doctor.col = 0;
-			}
 		}
-		
 	}
 	if(BUTTON_HELD(BUTTON_LEFT)){
 		doctor.aniState = SPRITELEFT;
 		hOff--;
+		//character can actually move left on screen 
 		if (doctor.col >= doctor.cdel){
 			doctor.col 	-= doctor.cdel;
 		}
-		 if (doctor.col == 2){
-			 doctor.col = SCREENWIDTH - doctor.width;
-		 }
 	}
 
 	if (doctor.aniState == SPRITEIDLE){
@@ -119,7 +112,6 @@ void drawDoctor(){
 	shadowOAM[0].attr0 = doctor.row | ATTR0_4BPP | ATTR0_SQUARE;
 	shadowOAM[0].attr1 = doctor.col | ATTR1_MEDIUM;
 	shadowOAM[0].attr2 = ATTR2_TILEID(doctor.curFrame *  4, doctor.aniState *  4);
-	waitForVBlank();
 }
 void initPill(){
 	for (int i = 0; i < PILLCOUNT; i++){
@@ -149,20 +141,18 @@ void firePill(){
 	}
 }
 void updatePill(PILL *p){
-	if (p-> active){
-		if (p->col + p->cdel > 0
-            && p->col + p->cdel < SCREENWIDTH-1) {
-				p->col += p->cdel;
-		}
-	} else {
-		p->active = 0;
-	} 
+	if (p->active) {
+		p->col += p->cdel;
+		
+		if (p->col < 0 || p->col + p->width > SCREENWIDTH - 1) { 
+			p->active = 0;
+		} 
+	}
 }
 void drawPill(PILL * p){
 	if (p->active){
-		shadowOAM[1].attr0 = p->row | ATTR0_4BPP | ATTR0_SQUARE;
-		shadowOAM[1].attr1 = p->col | ATTR1_MEDIUM;
+		shadowOAM[1].attr0 = (ROWMASK & p->row) | ATTR0_4BPP | ATTR0_SQUARE;
+		shadowOAM[1].attr1 = (COLMASK & p->col) | ATTR1_MEDIUM;
 		shadowOAM[1].attr2 = ATTR2_TILEID(4,16);
-		waitForVBlank();
 	}
 }

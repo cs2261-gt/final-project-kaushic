@@ -1002,7 +1002,7 @@ OBJ_ATTR shadowOAM[128];
 DOCSPRITE doctor;
 PILL pills[5];
 
-enum {SPRITERIGHT,SPRITELEFT, SPRITEIDLE, SPRITESHIELDRIGHT, SPRITESHIELDLEFT};
+enum {SPRITERIGHT,SPRITELEFT, SPRITESHIELDRIGHT,SPRITESHIELDLEFT,SPRITEIDLE};
 
 int frameCounter;
 
@@ -1033,14 +1033,12 @@ void updateGame(){
  }
 }
 void drawGame(){
- waitForVBlank();
  drawDoctor();
  for (int i = 0; i < 5; i++){
   drawPill(&pills[i]);
  }
 }
 void updateBkgd(){
-    waitForVBlank();
     (*(volatile unsigned short *)0x04000010) = hOff;
     if (hOff % 2 == 0){
         (*(volatile unsigned short *)0x04000014) = hOff/2;
@@ -1076,23 +1074,18 @@ void updateDoctor(){
  if((~((*(volatile unsigned short *)0x04000130)) & ((1<<4)))){
   doctor.aniState = SPRITERIGHT;
   hOff++;
+
   if (doctor.col + doctor.width - 1 < 240 - doctor.cdel){
    doctor.col += doctor.cdel;
-   if (doctor.col == 240 - doctor.width){
-    doctor.col = 0;
-   }
   }
-
  }
  if((~((*(volatile unsigned short *)0x04000130)) & ((1<<5)))){
   doctor.aniState = SPRITELEFT;
   hOff--;
+
   if (doctor.col >= doctor.cdel){
    doctor.col -= doctor.cdel;
   }
-   if (doctor.col == 2){
-    doctor.col = 240 - doctor.width;
-   }
  }
 
  if (doctor.aniState == SPRITEIDLE){
@@ -1112,7 +1105,6 @@ void drawDoctor(){
  shadowOAM[0].attr0 = doctor.row | (0<<13) | (0<<14);
  shadowOAM[0].attr1 = doctor.col | (2<<14);
  shadowOAM[0].attr2 = ((doctor.aniState * 4)*32+(doctor.curFrame * 4));
- waitForVBlank();
 }
 void initPill(){
  for (int i = 0; i < 5; i++){
@@ -1142,20 +1134,18 @@ void firePill(){
  }
 }
 void updatePill(PILL *p){
- if (p-> active){
-  if (p->col + p->cdel > 0
-            && p->col + p->cdel < 240 -1) {
-    p->col += p->cdel;
+ if (p->active) {
+  p->col += p->cdel;
+
+  if (p->col < 0 || p->col + p->width > 240 - 1) {
+   p->active = 0;
   }
- } else {
-  p->active = 0;
  }
 }
 void drawPill(PILL * p){
  if (p->active){
-  shadowOAM[1].attr0 = p->row | (0<<13) | (0<<14);
-  shadowOAM[1].attr1 = p->col | (2<<14);
+  shadowOAM[1].attr0 = (0xFF & p->row) | (0<<13) | (0<<14);
+  shadowOAM[1].attr1 = (0x1FF & p->col) | (2<<14);
   shadowOAM[1].attr2 = ((16)*32+(4));
-  waitForVBlank();
  }
 }

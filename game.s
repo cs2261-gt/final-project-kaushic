@@ -127,6 +127,68 @@ initGame:
 	.word	pills
 	.size	initGame, .-initGame
 	.align	2
+	.global	drawGame
+	.syntax unified
+	.arm
+	.fpu softvfp
+	.type	drawGame, %function
+drawGame:
+	@ Function supports interworking.
+	@ args = 0, pretend = 0, frame = 0
+	@ frame_needed = 0, uses_anonymous_args = 0
+	push	{r4, r5, r6, r7, lr}
+	mov	lr, #0
+	ldr	r3, .L20
+	ldr	r0, [r3, #28]
+	ldr	r2, [r3, #36]
+	ldr	ip, .L20+4
+	ldr	r1, [r3, #4]
+	ldr	r5, [r3]
+	add	r2, r2, r0, lsl #5
+	ldr	r0, .L20+8
+	lsl	r2, r2, #2
+	orr	r1, r1, ip
+	ldr	r3, .L20+12
+	strh	r2, [r0, #4]	@ movhi
+	strh	r5, [r0]	@ movhi
+	strh	r1, [r0, #2]	@ movhi
+	ldrh	r6, [r0, #8]
+	ldrh	r2, [r0, #10]
+	ldrh	r5, [r0, #12]
+	ldr	r7, .L20+16
+	mov	r4, ip
+	add	ip, r3, #140
+.L10:
+	ldr	r1, [r3, #24]
+	cmp	r1, #0
+	beq	.L9
+	mov	r5, #516
+	mov	lr, #1
+	ldr	r1, [r3, #4]
+	and	r2, r4, #32768
+	and	r1, r1, r7
+	ldrb	r6, [r3]	@ zero_extendqisi2
+	orr	r2, r2, r1
+.L9:
+	add	r3, r3, #28
+	cmp	ip, r3
+	bne	.L10
+	cmp	lr, #0
+	strhne	r6, [r0, #8]	@ movhi
+	strhne	r5, [r0, #12]	@ movhi
+	strhne	r2, [r0, #10]	@ movhi
+	pop	{r4, r5, r6, r7, lr}
+	bx	lr
+.L21:
+	.align	2
+.L20:
+	.word	doctor
+	.word	-32768
+	.word	shadowOAM
+	.word	pills
+	.word	511
+	.size	drawGame, .-drawGame
+	.align	2
 	.global	updateBkgd
 	.syntax unified
 	.arm
@@ -136,12 +198,9 @@ updateBkgd:
 	@ Function supports interworking.
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
-	push	{r4, lr}
-	ldr	r3, .L11
-	mov	lr, pc
-	bx	r3
+	@ link register save eliminated.
 	mov	r1, #67108864
-	ldr	r3, .L11+4
+	ldr	r3, .L24
 	ldr	r3, [r3]
 	tst	r3, #1
 	lsl	r2, r3, #16
@@ -151,13 +210,11 @@ updateBkgd:
 	lsr	r2, r2, #16
 	lsreq	r3, r3, #16
 	strh	r2, [r1, #16]	@ movhi
-	pop	{r4, lr}
 	strheq	r3, [r1, #20]	@ movhi
 	bx	lr
-.L12:
+.L25:
 	.align	2
-.L11:
-	.word	waitForVBlank
+.L24:
 	.word	hOff
 	.size	updateBkgd, .-updateBkgd
 	.align	2
@@ -177,7 +234,7 @@ initDoctor:
 	mov	lr, #3
 	mov	r0, #1
 	mov	r1, #16
-	ldr	r3, .L15
+	ldr	r3, .L28
 	str	r4, [r3]
 	str	lr, [r3, #40]
 	str	ip, [r3, #20]
@@ -191,9 +248,9 @@ initDoctor:
 	str	r2, [r3, #28]
 	pop	{r4, lr}
 	bx	lr
-.L16:
+.L29:
 	.align	2
-.L15:
+.L28:
 	.word	doctor
 	.size	initDoctor, .-initDoctor
 	.align	2
@@ -206,79 +263,27 @@ drawDoctor:
 	@ Function supports interworking.
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
-	ldr	r1, .L19
+	@ link register save eliminated.
+	ldr	r1, .L31
 	ldr	r2, [r1, #4]
 	mvn	r2, r2, lsl #17
 	mvn	r2, r2, lsr #17
-	push	{r4, lr}
+	ldr	ip, [r1, #28]
 	ldr	r3, [r1, #36]
-	ldr	lr, [r1, #28]
-	ldr	r0, .L19+4
-	ldr	ip, [r1]
-	add	r3, r3, lr, lsl #5
+	ldr	r0, .L31+4
+	ldr	r1, [r1]
+	add	r3, r3, ip, lsl #5
 	lsl	r3, r3, #2
-	ldr	r1, .L19+8
 	strh	r2, [r0, #2]	@ movhi
-	strh	ip, [r0]	@ movhi
+	strh	r1, [r0]	@ movhi
 	strh	r3, [r0, #4]	@ movhi
-	mov	lr, pc
-	bx	r1
-	pop	{r4, lr}
 	bx	lr
-.L20:
+.L32:
 	.align	2
-.L19:
+.L31:
 	.word	doctor
 	.word	shadowOAM
-	.word	waitForVBlank
 	.size	drawDoctor, .-drawDoctor
-	.align	2
-	.global	drawGame
-	.syntax unified
-	.arm
-	.fpu softvfp
-	.type	drawGame, %function
-drawGame:
-	@ Function supports interworking.
-	@ args = 0, pretend = 0, frame = 0
-	@ frame_needed = 0, uses_anonymous_args = 0
-	push	{r4, r5, r6, r7, r8, r9, r10, lr}
-	ldr	r6, .L30
-	mov	lr, pc
-	bx	r6
-	mov	r8, #516
-	bl	drawDoctor
-	ldr	r4, .L30+4
-	ldr	r9, .L30+8
-	ldr	r7, .L30+12
-	add	r5, r4, #140
-.L23:
-	ldr	r3, [r4, #24]
-	cmp	r3, #0
-	bne	.L29
-.L22:
-	add	r4, r4, #28
-	cmp	r4, r5
-	bne	.L23
-	pop	{r4, r5, r6, r7, r8, r9, r10, lr}
-	bx	lr
-.L29:
-	ldm	r4, {r2, r3}
-	orr	r3, r3, r7
-	strh	r8, [r9, #12]	@ movhi
-	strh	r3, [r9, #10]	@ movhi
-	strh	r2, [r9, #8]	@ movhi
-	mov	lr, pc
-	bx	r6
-	b	.L22
-.L31:
-	.align	2
-.L30:
-	.word	waitForVBlank
-	.word	pills
-	.word	shadowOAM
-	.word	-32768
-	.size	drawGame, .-drawGame
 	.align	2
 	.global	initPill
 	.syntax unified
@@ -293,9 +298,9 @@ initPill:
 	mov	r2, #8
 	mov	r1, #0
 	mvn	ip, #194
-	ldr	r3, .L36
+	ldr	r3, .L37
 	add	r0, r3, #140
-.L33:
+.L34:
 	str	r2, [r3, #20]
 	str	r2, [r3, #16]
 	str	r2, [r3, #8]
@@ -305,11 +310,11 @@ initPill:
 	str	r1, [r3, #24]
 	add	r3, r3, #28
 	cmp	r3, r0
-	bne	.L33
+	bne	.L34
 	bx	lr
-.L37:
+.L38:
 	.align	2
-.L36:
+.L37:
 	.word	pills
 	.size	initPill, .-initPill
 	.align	2
@@ -322,23 +327,23 @@ firePill:
 	@ Function supports interworking.
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
-	ldr	r0, .L52
+	ldr	r0, .L53
 	mov	r2, r0
 	ldr	r1, [r2, #24]
 	cmp	r1, #0
 	mov	r3, #0
-	beq	.L50
-.L39:
+	beq	.L51
+.L40:
 	add	r3, r3, #1
 	cmp	r3, #5
 	add	r2, r2, #28
 	bxeq	lr
 	ldr	r1, [r2, #24]
 	cmp	r1, #0
-	bne	.L39
-.L50:
+	bne	.L40
+.L51:
 	mov	r1, #125
-	ldr	ip, .L52+4
+	ldr	ip, .L53+4
 	str	lr, [sp, #-4]!
 	ldr	lr, [ip, #28]
 	rsb	r2, r3, r3, lsl #3
@@ -346,27 +351,27 @@ firePill:
 	str	r1, [r0, r2, lsl #2]
 	add	r2, r0, r2, lsl #2
 	lsl	r1, r3, #3
-	beq	.L51
+	beq	.L52
 	cmp	lr, #1
 	mvneq	lr, #7
 	ldreq	ip, [ip, #4]
 	subeq	ip, ip, #18
 	stmibeq	r2, {ip, lr}
-.L41:
+.L42:
 	mov	r2, #1
 	sub	r3, r1, r3
 	add	r0, r0, r3, lsl #2
 	str	r2, [r0, #24]
 	ldr	lr, [sp], #4
 	bx	lr
-.L51:
+.L52:
 	mov	lr, #8
 	ldr	ip, [ip, #4]
 	stmib	r2, {ip, lr}
-	b	.L41
-.L53:
+	b	.L42
+.L54:
 	.align	2
-.L52:
+.L53:
 	.word	pills
 	.word	doctor
 	.size	firePill, .-firePill
@@ -380,21 +385,21 @@ updateDoctor:
 	@ Function supports interworking.
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
-	push	{r4, r5, r6, r7, r8, lr}
-	ldr	r4, .L82
+	push	{r4, r5, r6, lr}
+	ldr	r4, .L79
 	ldr	r3, [r4, #28]
-	cmp	r3, #2
-	movne	r2, #2
+	cmp	r3, #4
+	movne	r2, #4
 	strne	r3, [r4, #32]
 	strne	r2, [r4, #28]
-	ldr	r3, .L82+4
+	ldr	r3, .L79+4
 	ldr	r2, [r4, #24]
 	smull	r0, r1, r3, r2
 	asr	r3, r2, #31
 	rsb	r3, r3, r1, asr #2
 	add	r3, r3, r3, lsl #2
 	subs	r3, r2, r3, lsl #1
-	bne	.L56
+	bne	.L57
 	add	r0, r4, #36
 	ldm	r0, {r0, r1}
 	sub	r1, r1, #1
@@ -402,93 +407,82 @@ updateDoctor:
 	addlt	r0, r0, #1
 	strlt	r0, [r4, #36]
 	strge	r3, [r4, #36]
-.L56:
-	ldr	r1, .L82+8
+.L57:
+	ldr	r1, .L79+8
 	ldrh	r3, [r1, #48]
 	ands	r3, r3, #16
-	bne	.L58
-	ldr	r0, .L82+12
-	ldr	r1, [r4, #4]
-	ldr	r5, [r4, #16]
-	ldr	ip, [r4, #8]
-	ldr	lr, [r0]
-	add	r8, r1, r5
-	rsb	r7, ip, #240
-	add	r6, lr, #1
-	cmp	r8, r7
+	bne	.L59
+	ldr	r5, [r4, #4]
+	ldr	r0, [r4, #8]
+	ldr	ip, [r4, #16]
+	ldr	r1, .L79+12
 	str	r3, [r4, #28]
-	str	r6, [r0]
-	ble	.L80
-.L61:
-	ldr	r3, .L82+8
+	ldr	r3, .L79+8
+	add	ip, r5, ip
+	rsb	r6, r0, #240
+	cmp	ip, r6
+	ldr	lr, [r1]
 	ldrh	r3, [r3, #48]
+	addle	r5, r5, r0
+	strle	r5, [r4, #4]
+	add	ip, lr, #1
 	tst	r3, #32
-	bne	.L64
-.L70:
-	mov	r1, #1
+	str	ip, [r1]
+	bne	.L62
+.L68:
+	mov	ip, #1
 	ldr	r3, [r4, #4]
-	cmp	r3, ip
-	subge	r3, r3, ip
-	strge	r3, [r4, #4]
-	cmp	r3, #2
-	str	lr, [r0]
-	str	r1, [r4, #28]
-	ldreq	r3, [r4, #16]
-	rsbeq	r3, r3, #240
-	streq	r3, [r4, #4]
-.L64:
+	cmp	r3, r0
+	subge	r0, r3, r0
+	str	lr, [r1]
+	str	ip, [r4, #28]
+	strge	r0, [r4, #4]
+.L62:
 	add	r2, r2, #1
 	str	r2, [r4, #24]
-	b	.L69
-.L58:
+.L67:
+	ldr	r3, .L79+16
+	ldrh	r3, [r3]
+	tst	r3, #1
+	ldr	r3, [r4, #44]
+	beq	.L77
+	ldr	r2, .L79+20
+	ldrh	r2, [r2]
+	tst	r2, #1
+	beq	.L65
+.L77:
+	add	r3, r3, #1
+.L64:
+	str	r3, [r4, #44]
+	pop	{r4, r5, r6, lr}
+	bx	lr
+.L65:
+	cmp	r3, #15
+	ble	.L77
+	bl	firePill
+	mov	r3, #1
+	b	.L64
+.L59:
 	ldrh	r3, [r1, #48]
 	tst	r3, #32
-	beq	.L81
+	beq	.L78
 	ldr	r3, [r4, #28]
-	cmp	r3, #2
-	bne	.L64
+	cmp	r3, #4
+	bne	.L62
 	mov	r2, #0
 	ldr	r3, [r4, #32]
 	str	r2, [r4, #36]
 	str	r3, [r4, #28]
-.L69:
-	ldr	r3, .L82+16
-	ldrh	r3, [r3]
-	tst	r3, #1
-	ldr	r3, [r4, #44]
-	beq	.L79
-	ldr	r2, .L82+20
-	ldrh	r2, [r2]
-	tst	r2, #1
-	bne	.L79
-	cmp	r3, #15
-	bgt	.L68
-.L79:
-	add	r3, r3, #1
-.L66:
-	str	r3, [r4, #44]
-	pop	{r4, r5, r6, r7, r8, lr}
-	bx	lr
-.L80:
-	add	r1, r1, ip
-	rsb	r5, r5, #240
-	cmp	r1, r5
-	moveq	r1, r3
-	str	r1, [r4, #4]
-	b	.L61
-.L81:
-	ldr	r0, .L82+12
-	ldr	lr, [r0]
-	ldr	ip, [r4, #8]
+	b	.L67
+.L78:
+	ldr	r1, .L79+12
+	ldr	lr, [r1]
+	ldr	r0, [r4, #8]
 	sub	lr, lr, #1
-	b	.L70
-.L68:
-	bl	firePill
-	mov	r3, #1
-	b	.L66
-.L83:
+	b	.L68
+.L80:
 	.align	2
-.L82:
+.L79:
 	.word	doctor
 	.word	1717986919
 	.word	67109120
@@ -506,50 +500,53 @@ updateGame:
 	@ Function supports interworking.
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
-	ldr	r2, .L93
-	ldr	r3, [r2]
-	push	{r4, lr}
-	add	r3, r3, #1
-	ldr	r1, .L93+4
-	str	r3, [r2]
-	mov	lr, pc
-	bx	r1
-	mov	r1, #67108864
-	ldr	r3, .L93+8
+	mov	ip, #67108864
+	ldr	r3, .L90
 	ldr	r3, [r3]
+	ldr	r0, .L90+4
 	tst	r3, #1
 	lsl	r2, r3, #16
 	addeq	r3, r3, r3, lsr #31
+	ldr	r1, [r0]
 	asreq	r3, r3, #1
 	lsleq	r3, r3, #16
+	add	r1, r1, #1
 	lsreq	r3, r3, #16
 	lsr	r2, r2, #16
-	strh	r2, [r1, #16]	@ movhi
-	strheq	r3, [r1, #20]	@ movhi
+	push	{r4, lr}
+	str	r1, [r0]
+	strh	r2, [ip, #16]	@ movhi
+	strheq	r3, [ip, #20]	@ movhi
 	bl	updateDoctor
-	ldr	r3, .L93+12
+	mov	ip, #0
+	ldr	r3, .L90+8
 	add	r1, r3, #140
 .L87:
 	ldr	r2, [r3, #24]
 	cmp	r2, #0
-	beq	.L86
+	beq	.L84
 	ldmib	r3, {r0, r2}
 	add	r2, r0, r2
-	sub	r0, r2, #1
-	cmp	r0, #237
-	strls	r2, [r3, #4]
-.L86:
+	cmp	r2, #0
+	str	r2, [r3, #4]
+	blt	.L85
+	ldr	r0, [r3, #16]
+	add	r2, r2, r0
+	cmp	r2, #239
+	ble	.L84
+.L85:
+	str	ip, [r3, #24]
+.L84:
 	add	r3, r3, #28
 	cmp	r3, r1
 	bne	.L87
 	pop	{r4, lr}
 	bx	lr
-.L94:
+.L91:
 	.align	2
-.L93:
-	.word	frameCounter
-	.word	waitForVBlank
+.L90:
 	.word	hOff
+	.word	frameCounter
 	.word	pills
 	.size	updateGame, .-updateGame
 	.align	2
@@ -568,9 +565,16 @@ updatePill:
 	bxeq	lr
 	ldmib	r0, {r2, r3}
 	add	r3, r2, r3
-	sub	r2, r3, #1
-	cmp	r2, #237
-	strls	r3, [r0, #4]
+	cmp	r3, #0
+	str	r3, [r0, #4]
+	blt	.L95
+	ldr	r2, [r0, #16]
+	add	r3, r3, r2
+	cmp	r3, #239
+	bxle	lr
+.L95:
+	mov	r3, #0
+	str	r3, [r0, #24]
 	bx	lr
 	.size	updatePill, .-updatePill
 	.align	2
@@ -583,29 +587,26 @@ drawPill:
 	@ Function supports interworking.
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
+	@ link register save eliminated.
 	ldr	r3, [r0, #24]
 	cmp	r3, #0
 	bxeq	lr
 	ldr	r3, [r0, #4]
+	lsl	r3, r3, #23
+	lsr	r3, r3, #23
 	mvn	r3, r3, lsl #17
-	mov	ip, #516
+	mov	r1, #516
 	mvn	r3, r3, lsr #17
-	push	{r4, lr}
-	ldr	r0, [r0]
-	ldr	r2, .L109
-	ldr	r1, .L109+4
+	ldrb	r0, [r0]	@ zero_extendqisi2
+	ldr	r2, .L102
 	strh	r3, [r2, #10]	@ movhi
 	strh	r0, [r2, #8]	@ movhi
-	strh	ip, [r2, #12]	@ movhi
-	mov	lr, pc
-	bx	r1
-	pop	{r4, lr}
+	strh	r1, [r2, #12]	@ movhi
 	bx	lr
-.L110:
+.L103:
 	.align	2
-.L109:
+.L102:
 	.word	shadowOAM
-	.word	waitForVBlank
 	.size	drawPill, .-drawPill
 	.comm	frameCounter,4,4
 	.comm	pills,140,4

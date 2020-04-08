@@ -181,26 +181,6 @@ extern const unsigned short loseMap[1024];
 extern const unsigned short losePal[256];
 # 9 "main.c" 2
 # 1 "game.h" 1
-
-extern int vOff;
-extern int hOff;
-extern OBJ_ATTR shadowOAM[128];
-extern int frameCounter;
-
-
-
-void initGame();
-void updateGame();
-void drawGame();
-void updateBkgd();
-void initDoctor();
-void updateDoctor();
-void drawDoctor();
-void initPill();
-void firePill();
-void updatePill();
-void drawPill();
-
 typedef struct {
     int row;
     int col;
@@ -225,6 +205,29 @@ typedef struct {
     int height;
     int active;
 }PILL;
+
+
+
+
+
+extern int vOff;
+extern int hOff;
+extern OBJ_ATTR shadowOAM[128];
+extern int frameCounter;
+extern PILL pills[5];
+
+
+void initGame();
+void updateGame();
+void drawGame();
+void updateBkgd();
+void initDoctor();
+void updateDoctor();
+void drawDoctor();
+void initPill();
+void firePill();
+void updatePill(PILL *);
+void drawPill(PILL *);
 # 10 "main.c" 2
 
 
@@ -351,16 +354,18 @@ void goToGame() {
 
 void game() {
     updateGame();
-    waitForVBlank();
     drawGame();
+    waitForVBlank();
+    DMANow(3,shadowOAM, ((OBJ_ATTR*)(0x7000000)), 512);
+
     if ((!(~(oldButtons)&((1<<3))) && (~buttons & ((1<<3))))){
         goToPause();
+        hideSprites();
     } else if ((!(~(oldButtons)&((1<<2))) && (~buttons & ((1<<2))))){
         goToWin();
     } else if ((!(~(oldButtons)&((1<<1))) && (~buttons & ((1<<1))))){
         goToLose();
     }
-    DMANow(3,shadowOAM, ((OBJ_ATTR*)(0x7000000)), 512);
 }
 
 void goToPause(){

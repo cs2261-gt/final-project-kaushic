@@ -650,57 +650,62 @@ game:
 	ldr	r3, .L96+8
 	mov	lr, pc
 	bx	r3
-	ldr	r3, .L96+12
+	ldr	r4, .L96+12
+	mov	r3, #512
+	mov	r2, #117440512
+	mov	r0, #3
+	ldr	r1, .L96+16
+	mov	lr, pc
+	bx	r4
+	ldr	r3, .L96+20
 	ldrh	r3, [r3]
 	tst	r3, #8
 	beq	.L80
-	ldr	r2, .L96+16
+	ldr	r2, .L96+24
 	ldrh	r2, [r2]
 	tst	r2, #8
 	beq	.L93
 .L80:
 	tst	r3, #4
 	beq	.L82
-	ldr	r2, .L96+16
+	ldr	r2, .L96+24
 	ldrh	r2, [r2]
 	tst	r2, #4
 	beq	.L94
 .L82:
 	tst	r3, #2
-	beq	.L81
-	ldr	r3, .L96+16
+	beq	.L79
+	ldr	r3, .L96+24
 	ldrh	r3, [r3]
 	tst	r3, #2
 	beq	.L95
-.L81:
-	ldr	r4, .L96+20
-	mov	r3, #512
-	mov	r2, #117440512
-	mov	r0, #3
-	ldr	r1, .L96+24
-	mov	lr, pc
-	bx	r4
+.L79:
 	pop	{r4, lr}
 	bx	lr
 .L93:
 	bl	goToPause
-	b	.L81
+	ldr	r3, .L96+28
+	mov	lr, pc
+	bx	r3
+	pop	{r4, lr}
+	bx	lr
 .L94:
-	bl	goToWin
-	b	.L81
+	pop	{r4, lr}
+	b	goToWin
 .L95:
-	bl	goToLose
-	b	.L81
+	pop	{r4, lr}
+	b	goToLose
 .L97:
 	.align	2
 .L96:
 	.word	updateGame
-	.word	waitForVBlank
 	.word	drawGame
-	.word	oldButtons
-	.word	buttons
+	.word	waitForVBlank
 	.word	DMANow
 	.word	shadowOAM
+	.word	oldButtons
+	.word	buttons
+	.word	hideSprites
 	.size	game, .-game
 	.section	.text.startup,"ax",%progbits
 	.align	2
