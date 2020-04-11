@@ -66,11 +66,12 @@ initGame:
 	mov	lr, pc
 	bx	r4
 	mov	r3, #0
-	mov	r5, #32
-	mov	r4, #1
-	mov	lr, #16
+	mov	r4, #32
+	mov	lr, #1
+	mov	r8, #104
 	mov	r7, #129
 	mov	r6, #3
+	mov	r5, #16
 	mov	r2, #8
 	mvn	ip, #194
 	ldr	r1, .L6+52
@@ -83,14 +84,13 @@ initGame:
 	str	r3, [r1, #36]
 	str	r3, [r1, #28]
 	ldr	r3, .L6+64
-	str	r7, [r1]
+	stm	r1, {r7, r8}
 	str	r6, [r1, #40]
-	str	r5, [r1, #20]
-	str	r5, [r1, #16]
-	str	r4, [r1, #8]
-	str	r4, [r1, #12]
-	str	lr, [r1, #4]
-	str	lr, [r1, #44]
+	str	r5, [r1, #44]
+	str	r4, [r1, #20]
+	str	r4, [r1, #16]
+	str	lr, [r1, #8]
+	str	lr, [r1, #12]
 	add	r1, r3, #140
 .L2:
 	str	r2, [r3, #20]
@@ -227,30 +227,34 @@ initDoctor:
 	@ Function supports interworking.
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
-	push	{r4, lr}
+	push	{r4, r5, lr}
 	mov	r2, #0
+	mov	r5, #129
+	mov	r4, #3
+	mov	lr, #16
 	mov	ip, #32
-	mov	r4, #129
-	mov	lr, #3
 	mov	r0, #1
-	mov	r1, #16
 	ldr	r3, .L28
-	str	r4, [r3]
-	str	lr, [r3, #40]
+	ldr	r1, [r3]
+	ldr	r3, .L28+4
+	add	r1, r1, #104
+	str	r5, [r3]
+	str	r4, [r3, #40]
+	str	lr, [r3, #44]
+	str	r1, [r3, #4]
 	str	ip, [r3, #20]
 	str	ip, [r3, #16]
 	str	r0, [r3, #8]
 	str	r0, [r3, #12]
-	str	r1, [r3, #4]
-	str	r1, [r3, #44]
 	str	r2, [r3, #24]
 	str	r2, [r3, #36]
 	str	r2, [r3, #28]
-	pop	{r4, lr}
+	pop	{r4, r5, lr}
 	bx	lr
 .L29:
 	.align	2
 .L28:
+	.word	hOff
 	.word	doctor
 	.size	initDoctor, .-initDoctor
 	.align	2
@@ -386,13 +390,13 @@ updateDoctor:
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
 	push	{r4, r5, r6, lr}
-	ldr	r4, .L79
+	ldr	r4, .L94
 	ldr	r3, [r4, #28]
 	cmp	r3, #4
 	movne	r2, #4
 	strne	r3, [r4, #32]
 	strne	r2, [r4, #28]
-	ldr	r3, .L79+4
+	ldr	r3, .L94+4
 	ldr	r2, [r4, #24]
 	smull	r0, r1, r3, r2
 	asr	r3, r2, #31
@@ -408,84 +412,123 @@ updateDoctor:
 	strlt	r0, [r4, #36]
 	strge	r3, [r4, #36]
 .L57:
-	ldr	r1, .L79+8
+	ldr	r1, .L94+8
 	ldrh	r3, [r1, #48]
 	ands	r3, r3, #16
 	bne	.L59
-	ldr	r5, [r4, #4]
-	ldr	r0, [r4, #8]
-	ldr	ip, [r4, #16]
-	ldr	r1, .L79+12
+	ldr	r0, [r4, #4]
+	ldr	r1, [r4, #16]
+	add	r1, r0, r1
+	cmp	r1, #255
 	str	r3, [r4, #28]
-	ldr	r3, .L79+8
-	add	ip, r5, ip
-	rsb	r6, r0, #240
-	cmp	ip, r6
-	ldr	lr, [r1]
-	ldrh	r3, [r3, #48]
-	addle	r5, r5, r0
-	strle	r5, [r4, #4]
-	add	ip, lr, #1
-	tst	r3, #32
-	str	ip, [r1]
-	bne	.L62
-.L68:
-	mov	ip, #1
-	ldr	r3, [r4, #4]
-	cmp	r3, r0
-	subge	r0, r3, r0
-	str	lr, [r1]
-	str	ip, [r4, #28]
-	strge	r0, [r4, #4]
-.L62:
+	bgt	.L60
+	ldr	lr, [r4, #8]
+	ldr	r3, [r4]
+	add	r1, r1, lr
+	sub	r1, r1, #1
+	ldr	r5, .L94+12
+	add	ip, r1, r3, lsl #8
+	lsl	ip, ip, #1
+	ldrh	ip, [r5, ip]
+	cmp	ip, #0
+	beq	.L60
+	ldr	ip, [r4, #20]
+	add	r3, r3, ip
+	sub	r3, r3, #1
+	add	r1, r1, r3, lsl #8
+	lsl	r1, r1, #1
+	ldrh	r3, [r5, r1]
+	cmp	r3, #0
+	addne	r0, r0, lr
+	strne	r0, [r4, #4]
+.L60:
+	ldr	r5, .L94+16
+	ldr	r1, .L94+8
+	ldr	r3, [r5]
+	ldrh	r1, [r1, #48]
+	add	r3, r3, #1
+	tst	r1, #32
+	str	r3, [r5]
+	bne	.L61
+.L63:
+	mov	r3, #1
+	ldr	r1, [r4, #4]
+	cmp	r1, #0
+	str	r3, [r4, #28]
+	ble	.L61
+	ldr	r0, [r4, #8]
+	ldr	r3, [r4]
+	sub	r1, r1, r0
+	ldr	ip, .L94+12
+	add	r0, r1, r3, lsl #8
+	lsl	r0, r0, #1
+	ldrh	r0, [ip, r0]
+	cmp	r0, #0
+	bne	.L93
+.L61:
 	add	r2, r2, #1
 	str	r2, [r4, #24]
-.L67:
-	ldr	r3, .L79+16
+.L69:
+	ldr	r3, .L94+20
 	ldrh	r3, [r3]
 	tst	r3, #1
 	ldr	r3, [r4, #44]
-	beq	.L77
-	ldr	r2, .L79+20
+	beq	.L92
+	ldr	r2, .L94+24
 	ldrh	r2, [r2]
 	tst	r2, #1
-	beq	.L65
-.L77:
+	beq	.L67
+.L92:
 	add	r3, r3, #1
-.L64:
+.L66:
+	ldr	r1, [r5]
+	ldr	r2, [r4, #4]
+	sub	r2, r2, r1
 	str	r3, [r4, #44]
+	str	r2, [r4, #48]
 	pop	{r4, r5, r6, lr}
 	bx	lr
-.L65:
-	cmp	r3, #15
-	ble	.L77
-	bl	firePill
-	mov	r3, #1
-	b	.L64
 .L59:
 	ldrh	r3, [r1, #48]
 	tst	r3, #32
-	beq	.L78
+	ldreq	r5, .L94+16
+	beq	.L63
 	ldr	r3, [r4, #28]
 	cmp	r3, #4
-	bne	.L62
+	ldrne	r5, .L94+16
+	bne	.L61
 	mov	r2, #0
 	ldr	r3, [r4, #32]
 	str	r2, [r4, #36]
 	str	r3, [r4, #28]
-	b	.L67
-.L78:
-	ldr	r1, .L79+12
-	ldr	lr, [r1]
-	ldr	r0, [r4, #8]
-	sub	lr, lr, #1
-	b	.L68
-.L80:
+	ldr	r5, .L94+16
+	b	.L69
+.L67:
+	cmp	r3, #15
+	ble	.L92
+	bl	firePill
+	mov	r3, #1
+	b	.L66
+.L93:
+	ldr	r0, [r4, #20]
+	add	r3, r3, r0
+	sub	r3, r3, #1
+	add	r3, r1, r3, lsl #8
+	lsl	r3, r3, #1
+	ldrh	r3, [ip, r3]
+	cmp	r3, #0
+	ldrne	r3, [r5]
+	subne	r3, r3, #1
+	strne	r1, [r4, #4]
+	strne	r3, [r5]
+	b	.L61
+.L95:
 	.align	2
-.L79:
+.L94:
 	.word	doctor
 	.word	1717986919
 	.word	67109120
+	.word	collisionmapBitmap
 	.word	hOff
 	.word	oldButtons
 	.word	buttons
@@ -501,9 +544,9 @@ updateGame:
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
 	mov	ip, #67108864
-	ldr	r3, .L90
+	ldr	r3, .L105
 	ldr	r3, [r3]
-	ldr	r0, .L90+4
+	ldr	r0, .L105+4
 	tst	r3, #1
 	lsl	r2, r3, #16
 	addeq	r3, r3, r3, lsr #31
@@ -519,32 +562,32 @@ updateGame:
 	strheq	r3, [ip, #20]	@ movhi
 	bl	updateDoctor
 	mov	r0, #0
-	ldr	r3, .L90+8
+	ldr	r3, .L105+8
 	add	r1, r3, #140
-.L87:
+.L102:
 	ldr	r2, [r3, #24]
 	cmp	r2, #0
-	beq	.L84
+	beq	.L99
 	ldmib	r3, {r2, ip}
 	add	r2, r2, ip
 	cmn	r2, #30
 	str	r2, [r3, #4]
-	blt	.L85
+	blt	.L100
 	ldr	ip, [r3, #16]
 	add	r2, r2, ip
 	cmp	r2, #239
-	ble	.L84
-.L85:
+	ble	.L99
+.L100:
 	str	r0, [r3, #24]
-.L84:
+.L99:
 	add	r3, r3, #28
 	cmp	r3, r1
-	bne	.L87
+	bne	.L102
 	pop	{r4, lr}
 	bx	lr
-.L91:
+.L106:
 	.align	2
-.L90:
+.L105:
 	.word	hOff
 	.word	frameCounter
 	.word	pills
@@ -567,17 +610,17 @@ updatePill:
 	add	r3, r2, r3
 	cmn	r3, #30
 	str	r3, [r0, #4]
-	bge	.L97
-.L95:
+	bge	.L112
+.L110:
 	mov	r3, #0
 	str	r3, [r0, #24]
 	bx	lr
-.L97:
+.L112:
 	ldr	r2, [r0, #16]
 	add	r3, r3, r2
 	cmp	r3, #239
 	bxle	lr
-	b	.L95
+	b	.L110
 	.size	updatePill, .-updatePill
 	.align	2
 	.global	drawPill
@@ -600,18 +643,18 @@ drawPill:
 	mov	r1, #516
 	mvn	r3, r3, lsr #17
 	ldrb	r0, [r0]	@ zero_extendqisi2
-	ldr	r2, .L103
+	ldr	r2, .L118
 	strh	r3, [r2, #10]	@ movhi
 	strh	r0, [r2, #8]	@ movhi
 	strh	r1, [r2, #12]	@ movhi
 	bx	lr
-.L104:
+.L119:
 	.align	2
-.L103:
+.L118:
 	.word	shadowOAM
 	.size	drawPill, .-drawPill
 	.comm	frameCounter,4,4
 	.comm	pills,140,4
-	.comm	doctor,48,4
+	.comm	doctor,52,4
 	.comm	shadowOAM,1024,4
 	.ident	"GCC: (devkitARM release 53) 9.1.0"

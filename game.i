@@ -935,6 +935,7 @@ typedef struct {
     int curFrame;
     int numFrames;
     int pillTimer;
+    int screenCol;
 } DOCSPRITE;
 
 typedef struct {
@@ -946,6 +947,8 @@ typedef struct {
     int height;
     int active;
 }PILL;
+
+
 
 
 
@@ -997,7 +1000,10 @@ extern const unsigned short spritesheetTiles[16384];
 
 extern const unsigned short spritesheetPal[256];
 # 7 "game.c" 2
-
+# 1 "collisionmap.h" 1
+# 20 "collisionmap.h"
+extern const unsigned short collisionmapBitmap[65536];
+# 8 "game.c" 2
 OBJ_ATTR shadowOAM[128];
 DOCSPRITE doctor;
 PILL pills[5];
@@ -1049,7 +1055,7 @@ void initDoctor(){
  doctor.width = 32;
  doctor.cdel = 1;
  doctor.rdel = 1;
- doctor.col = doctor.width / 2;
+ doctor.col = 240 / 2 - doctor.height / 2 + hOff;
  doctor.row = 160 - 31;
  doctor.aniCounter = 0;
  doctor.curFrame = 0;
@@ -1073,19 +1079,30 @@ void updateDoctor(){
 
  if((~((*(volatile unsigned short *)0x04000130)) & ((1<<4)))){
   doctor.aniState = SPRITERIGHT;
-  hOff++;
 
-  if (doctor.col + doctor.width - 1 < 240 - doctor.cdel){
+
+
+
+
+  if (doctor.col + doctor.width < 256 && collisionmapBitmap[((doctor.row)*(256)+(doctor.col + doctor.width + doctor.cdel - 1))]
+                                            && collisionmapBitmap[((doctor.row + doctor.height - 1)*(256)+(doctor.col + doctor.width + doctor.cdel - 1))])
    doctor.col += doctor.cdel;
+   hOff++;
   }
- }
  if((~((*(volatile unsigned short *)0x04000130)) & ((1<<5)))){
   doctor.aniState = SPRITELEFT;
-  hOff--;
 
-  if (doctor.col >= doctor.cdel){
-   doctor.col -= doctor.cdel;
-  }
+
+
+
+
+  if (doctor.col > 0 && collisionmapBitmap[((doctor.row)*(256)+(doctor.col - doctor.cdel))]
+                                 && collisionmapBitmap[((doctor.row + doctor.height - 1)*(256)+(doctor.col - doctor.cdel))]) {
+
+
+            doctor.col -= doctor.cdel;
+   hOff--;
+        }
  }
 
  if (doctor.aniState == SPRITEIDLE){
@@ -1100,6 +1117,7 @@ void updateDoctor(){
   doctor.pillTimer = 0;
  }
  doctor.pillTimer++;
+ doctor.screenCol = doctor.col - hOff;
 }
 void drawDoctor(){
  shadowOAM[0].attr0 = doctor.row | (0<<13) | (0<<14);

@@ -11,7 +11,18 @@ typedef struct {
     int curFrame;
     int numFrames;
     int pillTimer;
+    int screenCol;
 } DOCSPRITE;
+
+typedef struct {
+    int row;
+    int col;
+    int cdel;
+    int rdel;
+    int width;
+    int height;
+    int hitsTaken;
+} ENEMYSPRITE;
 
 typedef struct {
     int row;
@@ -25,6 +36,8 @@ typedef struct {
 
 //Constants
 #define PILLCOUNT 5
+#define MAPHEIGHT 256
+#define MAPWIDTH 256
 
 // Variables
 extern int vOff;

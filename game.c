@@ -4,7 +4,7 @@
 #include "sky.h"
 #include "city.h"
 #include "spritesheet.h"
-
+#include "collisionmap.h"
 OBJ_ATTR shadowOAM[128];
 DOCSPRITE doctor;
 PILL pills[PILLCOUNT];
@@ -56,7 +56,7 @@ void initDoctor(){
 	doctor.width = 32;
 	doctor.cdel = 1;
 	doctor.rdel = 1;
-	doctor.col = doctor.width / 2;
+	doctor.col = SCREENWIDTH / 2 - doctor.height / 2 + hOff;
 	doctor.row = SCREENHEIGHT - 31;
 	doctor.aniCounter = 0;
 	doctor.curFrame = 0;
@@ -80,19 +80,30 @@ void updateDoctor(){
 
 	if(BUTTON_HELD(BUTTON_RIGHT)){
 		doctor.aniState = SPRITERIGHT;
-		hOff++;
-		//character can actually move right on screen
-		if (doctor.col + doctor.width - 1 < SCREENWIDTH - doctor.cdel){
+		// hOff++;
+		// //character can actually move right on screen
+		// if (doctor.col + doctor.width - 1 < SCREENWIDTH - doctor.cdel){
+		// 	doctor.col += doctor.cdel;
+		// }
+		if (doctor.col + doctor.width < 256 && collisionmapBitmap[OFFSET(doctor.col + doctor.width + doctor.cdel - 1, doctor.row, MAPWIDTH)]
+                                            && collisionmapBitmap[OFFSET(doctor.col + doctor.width + doctor.cdel - 1, doctor.row + doctor.height - 1, MAPWIDTH)])
 			doctor.col += doctor.cdel;
+			hOff++;
 		}
-	}
 	if(BUTTON_HELD(BUTTON_LEFT)){
 		doctor.aniState = SPRITELEFT;
-		hOff--;
-		//character can actually move left on screen 
-		if (doctor.col >= doctor.cdel){
-			doctor.col 	-= doctor.cdel;
-		}
+		// hOff--;
+		// //character can actually move left on screen 
+		// if (doctor.col >= doctor.cdel){
+		// 	doctor.col 	-= doctor.cdel;
+		// }
+		if (doctor.col > 0 && collisionmapBitmap[OFFSET(doctor.col - doctor.cdel, doctor.row, MAPWIDTH)]
+                                 && collisionmapBitmap[OFFSET(doctor.col - doctor.cdel, doctor.row + doctor.height - 1, MAPWIDTH)]) {
+
+            // Update pikachu's world position if the above is true
+            doctor.col -= doctor.cdel;
+			hOff--;
+        }
 	}
 
 	if (doctor.aniState == SPRITEIDLE){
@@ -107,6 +118,7 @@ void updateDoctor(){
 		doctor.pillTimer = 0;
 	}
 	doctor.pillTimer++;
+	doctor.screenCol = doctor.col - hOff;
 }
 void drawDoctor(){
 	shadowOAM[0].attr0 = doctor.row | ATTR0_4BPP | ATTR0_SQUARE;
