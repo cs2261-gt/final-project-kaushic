@@ -194,7 +194,19 @@ typedef struct {
     int curFrame;
     int numFrames;
     int pillTimer;
+    int screenCol;
 } DOCSPRITE;
+
+typedef struct {
+    int row;
+    int col;
+    int cdel;
+    int rdel;
+    int width;
+    int height;
+    int hitsTaken;
+    int active;
+} ENEMY;
 
 typedef struct {
     int row;
@@ -205,11 +217,7 @@ typedef struct {
     int height;
     int active;
 }PILL;
-
-
-
-
-
+# 45 "game.h"
 extern int vOff;
 extern int hOff;
 extern OBJ_ATTR shadowOAM[128];
@@ -224,6 +232,9 @@ void updateBkgd();
 void initDoctor();
 void updateDoctor();
 void drawDoctor();
+void initEnemy();
+void updateEnemy(ENEMY *);
+void drawEnemy(ENEMY *);
 void initPill();
 void firePill();
 void updatePill(PILL *);
@@ -259,6 +270,7 @@ unsigned short oldButtons;
 
 
 int hOff;
+
 
 
 int main() {

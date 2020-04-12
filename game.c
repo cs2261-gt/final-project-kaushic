@@ -7,11 +7,14 @@
 #include "collisionmap.h"
 OBJ_ATTR shadowOAM[128];
 DOCSPRITE doctor;
+ENEMY enemies[ENEMYCOUNT];
 PILL pills[PILLCOUNT];
-
+int num;
 enum {SPRITERIGHT,SPRITELEFT, SPRITESHIELDRIGHT,SPRITESHIELDLEFT,SPRITEIDLE};
 
 int frameCounter;
+int enemiesRemaining;
+int cheat = 0;
 
 void initGame() {
 	DMANow(3, skyPal, PALETTE, skyPalLen/2);
@@ -27,8 +30,11 @@ void initGame() {
     
 	hOff = 0;
 	frameCounter = 0;
+	enemiesRemaining = ENEMYCOUNT * 2;
+	num = -1;
    	//hideSprites();
 	initDoctor();
+	initEnemy();
 	initPill();
 }
 void updateGame(){
@@ -38,11 +44,24 @@ void updateGame(){
 	for (int i = 0; i < PILLCOUNT; i++){
 		updatePill(&pills[i]);
 	}
+	for (int i = 0; i < ENEMYCOUNT; i++){
+		updateEnemy(&enemies[i]);
+	}
+	if (BUTTON_PRESSED(BUTTON_UP)){
+		if (cheat == 0){
+			cheat = 1;
+		} else {
+			cheat = 0;
+		}
+	}
 }
 void drawGame(){
 	drawDoctor();
 	for (int i = 0; i < PILLCOUNT; i++){
 		drawPill(&pills[i]);
+	}
+	for (int i = 0; i < ENEMYCOUNT; i++){
+		drawEnemy(&enemies[i]);
 	}
 }
 void updateBkgd(){
@@ -56,7 +75,7 @@ void initDoctor(){
 	doctor.width = 32;
 	doctor.cdel = 1;
 	doctor.rdel = 1;
-	doctor.col = SCREENWIDTH / 2 - doctor.height / 2 + hOff;
+	doctor.col = doctor.height / 2 + hOff;
 	doctor.row = SCREENHEIGHT - 31;
 	doctor.aniCounter = 0;
 	doctor.curFrame = 0;
@@ -79,7 +98,11 @@ void updateDoctor(){
 	}
 
 	if(BUTTON_HELD(BUTTON_RIGHT)){
-		doctor.aniState = SPRITERIGHT;
+		if (cheat == 1){
+			doctor.aniState = SPRITESHIELDRIGHT;
+		} else{
+			doctor.aniState = SPRITERIGHT;	
+		}
 		// hOff++;
 		// //character can actually move right on screen
 		// if (doctor.col + doctor.width - 1 < SCREENWIDTH - doctor.cdel){
@@ -91,7 +114,11 @@ void updateDoctor(){
 			hOff++;
 		}
 	if(BUTTON_HELD(BUTTON_LEFT)){
-		doctor.aniState = SPRITELEFT;
+		if (cheat == 1){
+			doctor.aniState = SPRITESHIELDLEFT;
+		} else{
+			doctor.aniState = SPRITELEFT;	
+		}
 		// hOff--;
 		// //character can actually move left on screen 
 		// if (doctor.col >= doctor.cdel){
@@ -100,7 +127,6 @@ void updateDoctor(){
 		if (doctor.col > 0 && collisionmapBitmap[OFFSET(doctor.col - doctor.cdel, doctor.row, MAPWIDTH)]
                                  && collisionmapBitmap[OFFSET(doctor.col - doctor.cdel, doctor.row + doctor.height - 1, MAPWIDTH)]) {
 
-            // Update pikachu's world position if the above is true
             doctor.col -= doctor.cdel;
 			hOff--;
         }
@@ -129,8 +155,8 @@ void initPill(){
 	for (int i = 0; i < PILLCOUNT; i++){
 		pills[i].height = 8;
 		pills[i].width = 8;
-		pills[i].cdel = 8;
-		pills[i].rdel = 8;
+		pills[i].cdel = 1;
+		pills[i].rdel = 1;
 		pills[i].col = 0;
 		pills[i].row = -SCREENHEIGHT - 35;
 		pills[i].active = 0;
@@ -141,11 +167,11 @@ void firePill(){
 		if (!pills[i].active){
 			pills[i].row = SCREENHEIGHT - 35;
 			if (doctor.aniState == SPRITERIGHT){
-				pills[i].col = doctor.col;
-				pills[i].cdel = 8;
+				pills[i].col = doctor.col+5;
+				pills[i].cdel = 2;
 			} else if (doctor.aniState == SPRITELEFT){
 				pills[i].col = doctor.col - 18;
-				pills[i].cdel = -8;
+				pills[i].cdel = -2;
 			}
 			pills[i].active = 1;
 			break;
@@ -166,5 +192,74 @@ void drawPill(PILL * p){
 		shadowOAM[1].attr0 = (ROWMASK & p->row) | ATTR0_4BPP | ATTR0_SQUARE;
 		shadowOAM[1].attr1 = (COLMASK & p->col) | ATTR1_MEDIUM;
 		shadowOAM[1].attr2 = ATTR2_TILEID(4,16);
+	}
+}
+void initEnemy(){
+	for (int i = 0; i < ENEMYCOUNT; i++){
+		enemies[i].row = SCREENHEIGHT - 31;
+		enemies[i].col = SCREENWIDTH + 100;
+		enemies[i].cdel = 1;
+		enemies[i].rdel = 1;
+		enemies[i].width = 32;
+		enemies[i].height = 32;
+		enemies[i].hitsTaken = 0;
+		enemies[i].active = 0;
+	}
+}
+void updateEnemy(ENEMY * e){
+	if (e->active){
+		e->col -= e->cdel;
+		//handle pill and enemy collision
+		for (int i = 0; i < PILLCOUNT; i++){
+			if (pills[i].active && collision(e->row, e->col, e->width, e->height,
+			pills[i].col, pills[i].row, pills[i].width, pills[i].height)){
+				e->hitsTaken += 1;
+				pills[i].active = 0;
+				//enemies 0, 2, 4 die after 1 hit
+				if ((num == 0 || num == 2 || num == 4) && e->hitsTaken == 1) {
+					e->active = 0; 
+					enemiesRemaining--;
+				}
+				//enemies 1, 3 die after 3 hits
+				if ((num == 1 || num == 3) && e-> hitsTaken == 3) {
+					e->active = 0;
+					enemiesRemaining--;	
+				}
+			}
+		}
+	} else {
+		for (int i = 0; i < ENEMYCOUNT; i++){
+			if (enemies[i].active == 0 && num == -1){
+				enemies[i].active = 1;
+				num = (rand() % 5);
+				break;
+			}
+		}
+	}
+}
+
+void drawEnemy(ENEMY * e){
+	int r = 0;
+	int c = 0;
+	if (num == 0){
+		c = 4;
+		r = 24;
+	} else if (num == 1){
+		c = 8;
+		r = 24;
+	} else if (num == 2){
+		c = 0;
+		r = 28;
+	} else if (num == 3){
+		c = 4;
+		r = 28;
+	} else if (num == 4){
+		c = 8;
+		r = 28;
+	}
+	if (e->active){
+		shadowOAM[10].attr0 = (ROWMASK & e->row) | ATTR0_4BPP | ATTR0_SQUARE;
+		shadowOAM[10].attr1 = (COLMASK & e->col) | ATTR1_MEDIUM;
+		shadowOAM[10].attr2 = ATTR2_TILEID(c,r);
 	}
 }

@@ -22,7 +22,8 @@ typedef struct {
     int width;
     int height;
     int hitsTaken;
-} ENEMYSPRITE;
+    int active;
+} ENEMY;
 
 typedef struct {
     int row;
@@ -36,6 +37,7 @@ typedef struct {
 
 //Constants
 #define PILLCOUNT 5
+#define ENEMYCOUNT 5
 #define MAPHEIGHT 256
 #define MAPWIDTH 256
 
@@ -54,6 +56,9 @@ void updateBkgd();
 void initDoctor();
 void updateDoctor();
 void drawDoctor();
+void initEnemy();
+void updateEnemy(ENEMY *);
+void drawEnemy(ENEMY *);
 void initPill();
 void firePill();
 void updatePill(PILL *);

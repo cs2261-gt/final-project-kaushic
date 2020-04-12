@@ -945,15 +945,20 @@ typedef struct {
     int rdel;
     int width;
     int height;
+    int hitsTaken;
+    int active;
+} ENEMY;
+
+typedef struct {
+    int row;
+    int col;
+    int cdel;
+    int rdel;
+    int width;
+    int height;
     int active;
 }PILL;
-
-
-
-
-
-
-
+# 45 "game.h"
 extern int vOff;
 extern int hOff;
 extern OBJ_ATTR shadowOAM[128];
@@ -968,6 +973,9 @@ void updateBkgd();
 void initDoctor();
 void updateDoctor();
 void drawDoctor();
+void initEnemy();
+void updateEnemy(ENEMY *);
+void drawEnemy(ENEMY *);
 void initPill();
 void firePill();
 void updatePill(PILL *);
@@ -1006,11 +1014,14 @@ extern const unsigned short collisionmapBitmap[65536];
 # 8 "game.c" 2
 OBJ_ATTR shadowOAM[128];
 DOCSPRITE doctor;
+ENEMY enemies[5];
 PILL pills[5];
-
+int num;
 enum {SPRITERIGHT,SPRITELEFT, SPRITESHIELDRIGHT,SPRITESHIELDLEFT,SPRITEIDLE};
 
 int frameCounter;
+int enemiesRemaining;
+int cheat = 0;
 
 void initGame() {
  DMANow(3, skyPal, ((unsigned short *)0x5000000), 512/2);
@@ -1026,8 +1037,11 @@ void initGame() {
 
  hOff = 0;
  frameCounter = 0;
+ enemiesRemaining = 5 * 2;
+ num = -1;
 
  initDoctor();
+ initEnemy();
  initPill();
 }
 void updateGame(){
@@ -1037,11 +1051,24 @@ void updateGame(){
  for (int i = 0; i < 5; i++){
   updatePill(&pills[i]);
  }
+ for (int i = 0; i < 5; i++){
+  updateEnemy(&enemies[i]);
+ }
+ if ((!(~(oldButtons)&((1<<6))) && (~buttons & ((1<<6))))){
+  if (cheat == 0){
+   cheat = 1;
+  } else {
+   cheat = 0;
+  }
+ }
 }
 void drawGame(){
  drawDoctor();
  for (int i = 0; i < 5; i++){
   drawPill(&pills[i]);
+ }
+ for (int i = 0; i < 5; i++){
+  drawEnemy(&enemies[i]);
  }
 }
 void updateBkgd(){
@@ -1055,7 +1082,7 @@ void initDoctor(){
  doctor.width = 32;
  doctor.cdel = 1;
  doctor.rdel = 1;
- doctor.col = 240 / 2 - doctor.height / 2 + hOff;
+ doctor.col = doctor.height / 2 + hOff;
  doctor.row = 160 - 31;
  doctor.aniCounter = 0;
  doctor.curFrame = 0;
@@ -1078,7 +1105,11 @@ void updateDoctor(){
  }
 
  if((~((*(volatile unsigned short *)0x04000130)) & ((1<<4)))){
-  doctor.aniState = SPRITERIGHT;
+  if (cheat == 1){
+   doctor.aniState = SPRITESHIELDRIGHT;
+  } else{
+   doctor.aniState = SPRITERIGHT;
+  }
 
 
 
@@ -1090,7 +1121,11 @@ void updateDoctor(){
    hOff++;
   }
  if((~((*(volatile unsigned short *)0x04000130)) & ((1<<5)))){
-  doctor.aniState = SPRITELEFT;
+  if (cheat == 1){
+   doctor.aniState = SPRITESHIELDLEFT;
+  } else{
+   doctor.aniState = SPRITELEFT;
+  }
 
 
 
@@ -1098,7 +1133,6 @@ void updateDoctor(){
 
   if (doctor.col > 0 && collisionmapBitmap[((doctor.row)*(256)+(doctor.col - doctor.cdel))]
                                  && collisionmapBitmap[((doctor.row + doctor.height - 1)*(256)+(doctor.col - doctor.cdel))]) {
-
 
             doctor.col -= doctor.cdel;
    hOff--;
@@ -1128,8 +1162,8 @@ void initPill(){
  for (int i = 0; i < 5; i++){
   pills[i].height = 8;
   pills[i].width = 8;
-  pills[i].cdel = 8;
-  pills[i].rdel = 8;
+  pills[i].cdel = 1;
+  pills[i].rdel = 1;
   pills[i].col = 0;
   pills[i].row = -160 - 35;
   pills[i].active = 0;
@@ -1140,11 +1174,11 @@ void firePill(){
   if (!pills[i].active){
    pills[i].row = 160 - 35;
    if (doctor.aniState == SPRITERIGHT){
-    pills[i].col = doctor.col;
-    pills[i].cdel = 8;
+    pills[i].col = doctor.col+5;
+    pills[i].cdel = 2;
    } else if (doctor.aniState == SPRITELEFT){
     pills[i].col = doctor.col - 18;
-    pills[i].cdel = -8;
+    pills[i].cdel = -2;
    }
    pills[i].active = 1;
    break;
@@ -1165,5 +1199,74 @@ void drawPill(PILL * p){
   shadowOAM[1].attr0 = (0xFF & p->row) | (0<<13) | (0<<14);
   shadowOAM[1].attr1 = (0x1FF & p->col) | (2<<14);
   shadowOAM[1].attr2 = ((16)*32+(4));
+ }
+}
+void initEnemy(){
+ for (int i = 0; i < 5; i++){
+  enemies[i].row = 160 - 31;
+  enemies[i].col = 240 + 100;
+  enemies[i].cdel = 1;
+  enemies[i].rdel = 1;
+  enemies[i].width = 32;
+  enemies[i].height = 32;
+  enemies[i].hitsTaken = 0;
+  enemies[i].active = 0;
+ }
+}
+void updateEnemy(ENEMY * e){
+ if (e->active){
+  e->col -= e->cdel;
+
+  for (int i = 0; i < 5; i++){
+   if (pills[i].active && collision(e->row, e->col, e->width, e->height,
+   pills[i].col, pills[i].row, pills[i].width, pills[i].height)){
+    e->hitsTaken += 1;
+    pills[i].active = 0;
+
+    if ((num == 0 || num == 2 || num == 4) && e->hitsTaken == 1) {
+     e->active = 0;
+     enemiesRemaining--;
+    }
+
+    if ((num == 1 || num == 3) && e-> hitsTaken == 3) {
+     e->active = 0;
+     enemiesRemaining--;
+    }
+   }
+  }
+ } else {
+  for (int i = 0; i < 5; i++){
+   if (enemies[i].active == 0 && num == -1){
+    enemies[i].active = 1;
+    num = (rand() % 5);
+    break;
+   }
+  }
+ }
+}
+
+void drawEnemy(ENEMY * e){
+ int r = 0;
+ int c = 0;
+ if (num == 0){
+  c = 4;
+  r = 24;
+ } else if (num == 1){
+  c = 8;
+  r = 24;
+ } else if (num == 2){
+  c = 0;
+  r = 28;
+ } else if (num == 3){
+  c = 4;
+  r = 28;
+ } else if (num == 4){
+  c = 8;
+  r = 28;
+ }
+ if (e->active){
+  shadowOAM[10].attr0 = (0xFF & e->row) | (0<<13) | (0<<14);
+  shadowOAM[10].attr1 = (0x1FF & e->col) | (2<<14);
+  shadowOAM[10].attr2 = ((r)*32+(c));
  }
 }
