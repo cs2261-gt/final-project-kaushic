@@ -974,6 +974,7 @@ void initDoctor();
 void updateDoctor();
 void drawDoctor();
 void initEnemy();
+void spawnEnemy();
 void updateEnemy(ENEMY *);
 void drawEnemy(ENEMY *);
 void initPill();
@@ -1012,6 +1013,30 @@ extern const unsigned short spritesheetPal[256];
 # 20 "collisionmap.h"
 extern const unsigned short collisionmapBitmap[65536];
 # 8 "game.c" 2
+# 1 "sound.h" 1
+SOUND soundA;
+SOUND soundB;
+
+
+
+void setupSounds();
+void playSoundA(const signed char* sound, int length, int loops);
+void playSoundB(const signed char* sound, int length, int loops);
+
+void setupInterrupts();
+void interruptHandler();
+
+void pauseSound();
+void unpauseSound();
+void stopSound();
+# 9 "game.c" 2
+# 1 "bubblePop.h" 1
+
+
+
+
+extern const signed char bubblePop[2117];
+# 10 "game.c" 2
 OBJ_ATTR shadowOAM[128];
 DOCSPRITE doctor;
 ENEMY enemies[5];
@@ -1048,6 +1073,7 @@ void updateGame(){
  frameCounter++;
  updateBkgd();
  updateDoctor();
+ spawnEnemy();
  for (int i = 0; i < 5; i++){
   updatePill(&pills[i]);
  }
@@ -1148,6 +1174,7 @@ void updateDoctor(){
 
  if ((!(~(oldButtons)&((1<<0))) && (~buttons & ((1<<0)))) && doctor.pillTimer >= 16){
   firePill();
+  playSoundB(bubblePop, 2117, 0);
   doctor.pillTimer = 0;
  }
  doctor.pillTimer++;
@@ -1173,14 +1200,15 @@ void firePill(){
  for (int i = 0; i < 5; i++){
   if (!pills[i].active){
    pills[i].row = 160 - 35;
-   if (doctor.aniState == SPRITERIGHT){
+   if (doctor.aniState == SPRITERIGHT || doctor.aniState == SPRITESHIELDRIGHT){
     pills[i].col = doctor.col+5;
     pills[i].cdel = 2;
-   } else if (doctor.aniState == SPRITELEFT){
+   } else if (doctor.aniState == SPRITELEFT || doctor.aniState == SPRITESHIELDLEFT){
     pills[i].col = doctor.col - 18;
     pills[i].cdel = -2;
    }
    pills[i].active = 1;
+
    break;
   }
  }
@@ -1213,9 +1241,28 @@ void initEnemy(){
   enemies[i].active = 0;
  }
 }
+void spawnEnemy() {
+ int randNum = rand() % 10;
+ if (frameCounter % randNum == 0){
+  for (int i = 0; i < 5; i++){
+   if (enemies[i].active == 0 && num == -1){
+    enemies[i].active = 1;
+    num = (rand() % 5);
+    if (randNum % 2 == 0){
+     enemies[i].col = 240;
+     enemies[i].cdel = -1;
+    } else {
+     enemies[i].col = 0;
+     enemies[i].cdel = 1;
+    }
+    break;
+   }
+  }
+ }
+}
 void updateEnemy(ENEMY * e){
  if (e->active){
-  e->col -= e->cdel;
+  e->col += e->cdel;
 
   for (int i = 0; i < 5; i++){
    if (pills[i].active && collision(e->row, e->col, e->width, e->height,
@@ -1225,21 +1272,15 @@ void updateEnemy(ENEMY * e){
 
     if ((num == 0 || num == 2 || num == 4) && e->hitsTaken == 1) {
      e->active = 0;
+     num = -1;
      enemiesRemaining--;
     }
 
     if ((num == 1 || num == 3) && e-> hitsTaken == 3) {
      e->active = 0;
+     num = -1;
      enemiesRemaining--;
     }
-   }
-  }
- } else {
-  for (int i = 0; i < 5; i++){
-   if (enemies[i].active == 0 && num == -1){
-    enemies[i].active = 1;
-    num = (rand() % 5);
-    break;
    }
   }
  }

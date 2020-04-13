@@ -57,6 +57,7 @@ void initDoctor();
 void updateDoctor();
 void drawDoctor();
 void initEnemy();
+void spawnEnemy();
 void updateEnemy(ENEMY *);
 void drawEnemy(ENEMY *);
 void initPill();

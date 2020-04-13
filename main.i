@@ -240,7 +240,58 @@ void firePill();
 void updatePill(PILL *);
 void drawPill(PILL *);
 # 10 "main.c" 2
+# 1 "sound.h" 1
+SOUND soundA;
+SOUND soundB;
 
+
+
+void setupSounds();
+void playSoundA(const signed char* sound, int length, int loops);
+void playSoundB(const signed char* sound, int length, int loops);
+
+void setupInterrupts();
+void interruptHandler();
+
+void pauseSound();
+void unpauseSound();
+void stopSound();
+# 11 "main.c" 2
+# 1 "menuSong.h" 1
+
+
+
+
+extern const signed char menuSong[2628272];
+# 12 "main.c" 2
+# 1 "loseSong.h" 1
+
+
+
+
+extern const signed char loseSong[64298];
+# 13 "main.c" 2
+# 1 "pauseSong.h" 1
+
+
+
+
+extern const signed char pauseSong[177120];
+# 14 "main.c" 2
+# 1 "gameSong.h" 1
+
+
+
+
+extern const signed char gameSong[1176230];
+# 15 "main.c" 2
+# 1 "winSong.h" 1
+
+
+
+
+extern const signed char winSong[38896];
+# 16 "main.c" 2
 
 void initialize();
 void initialize();
@@ -272,6 +323,8 @@ unsigned short oldButtons;
 int hOff;
 
 
+SOUND soundA;
+SOUND soundB;
 
 int main() {
     initialize();
@@ -310,6 +363,8 @@ void initialize() {
     (*(volatile unsigned short*)0x400000A) = (0<<14) | ((0)<<2) | ((28)<<8) | (0<<7);
     (*(volatile unsigned short*)0x4000008) = (1<<14) | ((1)<<2) | ((30)<<8) | (0<<7);
     buttons = (*(volatile unsigned short *)0x04000130);
+    setupSounds();
+    setupInterrupts();
     goToStart();
 }
 void goToStart() {
@@ -323,14 +378,20 @@ void goToStart() {
     hideSprites();
     waitForVBlank();
     DMANow(3, shadowOAM, ((OBJ_ATTR*)(0x7000000)), 512);
+
+    playSoundA(menuSong, 2628272, 1);
     state = START;
 }
 void start() {
     if ((!(~(oldButtons)&((1<<3))) && (~buttons & ((1<<3))))){
+        stopSound();
+
+        playSoundA(gameSong, 1176230, 1);
         goToGame();
         initGame();
     }
     if ((!(~(oldButtons)&((1<<2))) && (~buttons & ((1<<2))))){
+       pauseSound();
        goToInstructions();
     }
 }
@@ -349,8 +410,10 @@ void goToInstructions() {
 }
 void instructions(){
     if((!(~(oldButtons)&((1<<2))) && (~buttons & ((1<<2))))){
+        unpauseSound();
         goToStart();
     } else if ((!(~(oldButtons)&((1<<3))) && (~buttons & ((1<<3))))){
+        playSoundA(gameSong, 1176230, 1);
         goToGame();
         initGame();
     }
@@ -377,10 +440,17 @@ void game() {
     DMANow(3,shadowOAM, ((OBJ_ATTR*)(0x7000000)), 512);
 
     if ((!(~(oldButtons)&((1<<3))) && (~buttons & ((1<<3))))){
+        pauseSound();
         goToPause();
     } else if ((!(~(oldButtons)&((1<<2))) && (~buttons & ((1<<2))))){
+        stopSound();
+
+        playSoundA(winSong, 38896, 0);
         goToWin();
     } else if ((!(~(oldButtons)&((1<<1))) && (~buttons & ((1<<1))))){
+        stopSound();
+
+        playSoundA(loseSong, 64298, 0);
         goToLose();
     }
 }
@@ -400,8 +470,10 @@ void goToPause(){
 }
 void pause(){
     if((!(~(oldButtons)&((1<<2))) && (~buttons & ((1<<2))))){
+        pauseSound();
         goToStart();
     } else if ((!(~(oldButtons)&((1<<3))) && (~buttons & ((1<<3))))){
+        unpauseSound();
         goToGame();
     }
 }

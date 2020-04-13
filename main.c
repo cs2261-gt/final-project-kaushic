@@ -7,7 +7,12 @@
 #include "win.h"
 #include "lose.h"
 #include "game.h"
-
+#include "sound.h"
+#include "menuSong.h"
+#include "loseSong.h"
+#include "pauseSong.h"
+#include "gameSong.h"
+#include "winSong.h"
 // Prototypes
 void initialize();
 void initialize();
@@ -38,7 +43,9 @@ unsigned short oldButtons;
 // Horizontal Offset
 int hOff;
 
-
+//Sounds
+SOUND soundA;
+SOUND soundB;
 
 int main() {
     initialize();
@@ -77,6 +84,8 @@ void initialize() {
     REG_BG1CNT = BG_SIZE_SMALL | BG_CHARBLOCK(0) | BG_SCREENBLOCK(28) | BG_4BPP;
     REG_BG0CNT = BG_SIZE_WIDE | BG_CHARBLOCK(1) | BG_SCREENBLOCK(30) | BG_4BPP;
     buttons = BUTTONS;
+    setupSounds();
+    setupInterrupts();
     goToStart();
 }
 void goToStart() {
@@ -90,14 +99,20 @@ void goToStart() {
     hideSprites(); 
     waitForVBlank();
     DMANow(3, shadowOAM, OAM, 512);
+    //plays menu music
+    playSoundA(menuSong, MENUSONGLEN, 1);
     state = START;
 }
 void start() {
     if (BUTTON_PRESSED(BUTTON_START)){
+        stopSound();
+        //plays game music
+        playSoundA(gameSong, GAMESONGLEN, 1);
         goToGame();
         initGame();
     } 
     if (BUTTON_PRESSED(BUTTON_SELECT)){
+       pauseSound();
        goToInstructions();
     }
 }
@@ -116,8 +131,10 @@ void goToInstructions() {
 }
 void instructions(){
     if(BUTTON_PRESSED(BUTTON_SELECT)){
+        unpauseSound();
         goToStart();
     } else if (BUTTON_PRESSED(BUTTON_START)){
+        playSoundA(gameSong, GAMESONGLEN, 1);
         goToGame();
         initGame();
     }
@@ -144,10 +161,17 @@ void game() {
     DMANow(3,shadowOAM, OAM, 512);
 
     if (BUTTON_PRESSED(BUTTON_START)){
+        pauseSound();
         goToPause();
     } else if (BUTTON_PRESSED(BUTTON_SELECT)){
+        stopSound();
+        //play win music
+        playSoundA(winSong, WINSONGLEN, 0);
         goToWin();
     } else if (BUTTON_PRESSED(BUTTON_B)){
+        stopSound();
+        //play lose music
+        playSoundA(loseSong, LOSESONGLEN, 0);
         goToLose();
     }
 }
@@ -167,8 +191,10 @@ void goToPause(){
 }
 void pause(){
     if(BUTTON_PRESSED(BUTTON_SELECT)){
+        pauseSound();
         goToStart();
     } else if (BUTTON_PRESSED(BUTTON_START)){
+        unpauseSound();
         goToGame();
     }
 }

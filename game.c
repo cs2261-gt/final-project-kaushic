@@ -5,6 +5,8 @@
 #include "city.h"
 #include "spritesheet.h"
 #include "collisionmap.h"
+#include "sound.h"
+#include "bubblePop.h"
 OBJ_ATTR shadowOAM[128];
 DOCSPRITE doctor;
 ENEMY enemies[ENEMYCOUNT];
@@ -41,6 +43,7 @@ void updateGame(){
 	frameCounter++;
 	updateBkgd();
 	updateDoctor();
+	spawnEnemy();
 	for (int i = 0; i < PILLCOUNT; i++){
 		updatePill(&pills[i]);
 	}
@@ -141,6 +144,7 @@ void updateDoctor(){
 
 	if (BUTTON_PRESSED(BUTTON_A) && doctor.pillTimer >= 16){
 		firePill();
+		playSoundB(bubblePop, BUBBLEPOPLEN, 0);
 		doctor.pillTimer = 0;
 	}
 	doctor.pillTimer++;
@@ -166,14 +170,15 @@ void firePill(){
 	for (int i = 0; i < PILLCOUNT; i++){
 		if (!pills[i].active){
 			pills[i].row = SCREENHEIGHT - 35;
-			if (doctor.aniState == SPRITERIGHT){
+			if (doctor.aniState == SPRITERIGHT || doctor.aniState == SPRITESHIELDRIGHT){
 				pills[i].col = doctor.col+5;
 				pills[i].cdel = 2;
-			} else if (doctor.aniState == SPRITELEFT){
+			} else if (doctor.aniState == SPRITELEFT || doctor.aniState == SPRITESHIELDLEFT){
 				pills[i].col = doctor.col - 18;
 				pills[i].cdel = -2;
 			}
 			pills[i].active = 1;
+			
 			break;
 		}
 	}
@@ -206,9 +211,28 @@ void initEnemy(){
 		enemies[i].active = 0;
 	}
 }
+void spawnEnemy() {
+	int randNum  = rand() % 10;
+	if (frameCounter % randNum == 0){
+		for (int i = 0; i < ENEMYCOUNT; i++){
+			if (enemies[i].active == 0 && num == -1){
+				enemies[i].active = 1;
+				num = (rand() % 5);
+				if (randNum % 2 == 0){
+					enemies[i].col = SCREENWIDTH;
+					enemies[i].cdel = -1;
+				} else {
+					enemies[i].col = 0;
+					enemies[i].cdel = 1;
+				}
+				break;
+			}
+		}
+	}
+}
 void updateEnemy(ENEMY * e){
 	if (e->active){
-		e->col -= e->cdel;
+		e->col += e->cdel;
 		//handle pill and enemy collision
 		for (int i = 0; i < PILLCOUNT; i++){
 			if (pills[i].active && collision(e->row, e->col, e->width, e->height,
@@ -218,21 +242,15 @@ void updateEnemy(ENEMY * e){
 				//enemies 0, 2, 4 die after 1 hit
 				if ((num == 0 || num == 2 || num == 4) && e->hitsTaken == 1) {
 					e->active = 0; 
+					num = -1;
 					enemiesRemaining--;
 				}
 				//enemies 1, 3 die after 3 hits
 				if ((num == 1 || num == 3) && e-> hitsTaken == 3) {
 					e->active = 0;
+					num = -1;
 					enemiesRemaining--;	
 				}
-			}
-		}
-	} else {
-		for (int i = 0; i < ENEMYCOUNT; i++){
-			if (enemies[i].active == 0 && num == -1){
-				enemies[i].active = 1;
-				num = (rand() % 5);
-				break;
 			}
 		}
 	}
