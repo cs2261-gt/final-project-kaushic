@@ -947,6 +947,7 @@ typedef struct {
     int height;
     int hitsTaken;
     int active;
+    int screenCol;
 } ENEMY;
 
 typedef struct {
@@ -958,7 +959,7 @@ typedef struct {
     int height;
     int active;
 }PILL;
-# 45 "game.h"
+# 46 "game.h"
 extern int vOff;
 extern int hOff;
 extern OBJ_ATTR shadowOAM[128];
@@ -1108,7 +1109,7 @@ void initDoctor(){
  doctor.width = 32;
  doctor.cdel = 1;
  doctor.rdel = 1;
- doctor.col = doctor.height / 2 + hOff;
+ doctor.col = 240/2 - doctor.height / 2 + hOff;
  doctor.row = 160 - 31;
  doctor.aniCounter = 0;
  doctor.curFrame = 0;
@@ -1237,16 +1238,19 @@ void initEnemy(){
   enemies[i].rdel = 1;
   enemies[i].width = 32;
   enemies[i].height = 32;
-  enemies[i].hitsTaken = 0;
+  enemies[i].hitsTaken = -1;
   enemies[i].active = 0;
+  enemies[i].screenCol = 0;
  }
 }
+
 void spawnEnemy() {
  int randNum = rand() % 10;
  if (frameCounter % randNum == 0){
   for (int i = 0; i < 5; i++){
    if (enemies[i].active == 0 && num == -1){
     enemies[i].active = 1;
+    enemies[i].hitsTaken = 0;
     num = (rand() % 5);
     if (randNum % 2 == 0){
      enemies[i].col = 240;
@@ -1262,7 +1266,11 @@ void spawnEnemy() {
 }
 void updateEnemy(ENEMY * e){
  if (e->active){
-  e->col += e->cdel;
+  if (e->col < 240 || e->col > 0){
+   e->col += e->cdel;
+  } if (e->col < 0 || e->col > 240){
+   e->active = 0;
+  }
 
   for (int i = 0; i < 5; i++){
    if (pills[i].active && collision(e->row, e->col, e->width, e->height,
@@ -1270,13 +1278,13 @@ void updateEnemy(ENEMY * e){
     e->hitsTaken += 1;
     pills[i].active = 0;
 
-    if ((num == 0 || num == 2 || num == 4) && e->hitsTaken == 1) {
+    if ((num == 0 || num == 2 || num == 4)) {
      e->active = 0;
      num = -1;
      enemiesRemaining--;
     }
 
-    if ((num == 1 || num == 3) && e-> hitsTaken == 3) {
+    if ((num == 1 || num == 3) && e-> hitsTaken == 2) {
      e->active = 0;
      num = -1;
      enemiesRemaining--;
@@ -1284,6 +1292,7 @@ void updateEnemy(ENEMY * e){
    }
   }
  }
+ e->screenCol = e->col - hOff;
 }
 
 void drawEnemy(ENEMY * e){

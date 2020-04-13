@@ -78,7 +78,7 @@ void initDoctor(){
 	doctor.width = 32;
 	doctor.cdel = 1;
 	doctor.rdel = 1;
-	doctor.col = doctor.height / 2 + hOff;
+	doctor.col = SCREENWIDTH/2 - doctor.height / 2 + hOff;
 	doctor.row = SCREENHEIGHT - 31;
 	doctor.aniCounter = 0;
 	doctor.curFrame = 0;
@@ -207,16 +207,18 @@ void initEnemy(){
 		enemies[i].rdel = 1;
 		enemies[i].width = 32;
 		enemies[i].height = 32;
-		enemies[i].hitsTaken = 0;
+		enemies[i].hitsTaken = -1;
 		enemies[i].active = 0;
 	}
 }
+//generates a random enemy
 void spawnEnemy() {
 	int randNum  = rand() % 10;
 	if (frameCounter % randNum == 0){
 		for (int i = 0; i < ENEMYCOUNT; i++){
 			if (enemies[i].active == 0 && num == -1){
 				enemies[i].active = 1;
+				enemies[i].hitsTaken = 0;
 				num = (rand() % 5);
 				if (randNum % 2 == 0){
 					enemies[i].col = SCREENWIDTH;
@@ -232,7 +234,11 @@ void spawnEnemy() {
 }
 void updateEnemy(ENEMY * e){
 	if (e->active){
-		e->col += e->cdel;
+		if (e->col < SCREENWIDTH || e->col > 0){
+			e->col += e->cdel;
+		} if (e->col < 0 || e->col > SCREENWIDTH){
+			e->active = 0;
+		}
 		//handle pill and enemy collision
 		for (int i = 0; i < PILLCOUNT; i++){
 			if (pills[i].active && collision(e->row, e->col, e->width, e->height,
@@ -240,13 +246,13 @@ void updateEnemy(ENEMY * e){
 				e->hitsTaken += 1;
 				pills[i].active = 0;
 				//enemies 0, 2, 4 die after 1 hit
-				if ((num == 0 || num == 2 || num == 4) && e->hitsTaken == 1) {
+				if ((num == 0 || num == 2 || num == 4)) {
 					e->active = 0; 
 					num = -1;
 					enemiesRemaining--;
 				}
 				//enemies 1, 3 die after 3 hits
-				if ((num == 1 || num == 3) && e-> hitsTaken == 3) {
+				if ((num == 1 || num == 3) && e-> hitsTaken == 2) {
 					e->active = 0;
 					num = -1;
 					enemiesRemaining--;	
