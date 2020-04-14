@@ -23,6 +23,7 @@ typedef struct {
     int height;
     int hitsTaken;
     int active;
+    int num;
 } ENEMY;
 
 typedef struct {
@@ -48,7 +49,7 @@ typedef struct {
 
 //Constants
 #define PILLCOUNT 5
-#define ENEMYCOUNT 5
+#define ENEMYCOUNT 2
 #define POWERUPCOUNT 5
 #define MAPHEIGHT 256
 #define MAPWIDTH 256
@@ -65,6 +66,7 @@ extern int fast;
 extern int slow;
 extern int box;
 extern int attack;
+extern int activeEnemies;
 
 //Prototypes
 void initGame();
@@ -79,12 +81,12 @@ void drawDoctor();
 void initEnemy();
 void spawnEnemy();
 void updateEnemy(ENEMY *);
-void drawEnemy(ENEMY *);
+void drawEnemy();
 //pills
 void initPill();
 void firePill();
 void updatePill(PILL *);
-void drawPill(PILL *);
+void drawPill();
 //powerups
 void initPowerup();
 void spawnPowerup(POWERUP *);

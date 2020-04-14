@@ -19,6 +19,7 @@ int frameCounter;
 int enemiesRemaining;
 int cheat = 0;
 int randPowerup;
+int activeEnemies;
 
 void initGame() {
 	DMANow(3, skyPal, PALETTE, skyPalLen/2);
@@ -261,11 +262,15 @@ void updatePill(PILL *p){
 		} 
 	}
 }
-void drawPill(PILL * p){
-	if (p->active){
-		shadowOAM[1].attr0 = (ROWMASK & p->row) | ATTR0_4BPP | ATTR0_SQUARE;
-		shadowOAM[1].attr1 = (COLMASK & p->col) | ATTR1_MEDIUM;
-		shadowOAM[1].attr2 = ATTR2_TILEID(4,16);
+void drawPill(){
+	for (int i = 0; i < PILLCOUNT; i++){
+		if (pills[i].active){
+			shadowOAM[1 + i].attr0 = (ROWMASK & pills[i].row) | ATTR0_4BPP | ATTR0_SQUARE;
+			shadowOAM[1 + i].attr1 = (COLMASK & pills[i].col) | ATTR1_MEDIUM;
+			shadowOAM[1 + i].attr2 = ATTR2_TILEID(4,16);
+		} else {
+			shadowOAM[1 + i].attr0 = ATTR0_HIDE;
+		}
 	}
 }
 void initEnemy(){
@@ -283,22 +288,26 @@ void initEnemy(){
 }
 //generates a random enemy
 void spawnEnemy() {
-	int randNum  = rand() % 10;
+	int randNum  = rand() % 50;
 	//spawns enemies at random time intervals
-	if (frameCounter % randNum == 0){
+	if (frameCounter % 50 == 0){
 		for (int i = 0; i < ENEMYCOUNT; i++){
 			//if an enemy is inactive and there currently isn't an enemy on screen, initalize one
-			if (enemies[i].active == 0 && num == -1){
+			if (enemies[i].active == 0 && activeEnemies < 3){
 				enemies[i].active = 1;
+				enemies[i].num = (rand() % 5);
+				enemies[i].col = SCREENWIDTH;
+				enemies[i].cdel = -1;
+				activeEnemies += 1;
 				//picks a random enemy type
-				num = (rand() % 5);
-				if (randNum % 2 == 0){ //enemy comes from the right
-					enemies[i].col = SCREENWIDTH;
-					enemies[i].cdel = -1;
-				} else { //enemy comes from the left
-					enemies[i].col = 0;
-					enemies[i].cdel = 1;
-				}
+				// if (randNum % 2 == 0){ //enemy comes from the right
+				// 	enemies[i].col = SCREENWIDTH;
+				// 	enemies[i].cdel = -1;
+				// } 
+				// else { //enemy comes from the left
+				// 	enemies[i].col = 0;
+				// 	enemies[i].cdel = 1;
+				// }
 				break;
 			}
 		}
@@ -314,49 +323,58 @@ void updateEnemy(ENEMY * e){
 		for (int i = 0; i < PILLCOUNT; i++){
 			if (pills[i].active && collision(e->col, e->row, e->width, e->height,
 			pills[i].col, pills[i].row, pills[i].width, pills[i].height)){
-				e->hitsTaken += 1;
+				e->active = 0;
+				activeEnemies -= 1;
+				//e->hitsTaken += 1;
 				pills[i].active = 0;
 				//enemies 0, 2, 4 die after 1 hit
-				if ((num % 2 == 0) && e->hitsTaken == 1) {
-					e->active = 0; 
-					num = -1; //reset num so spawnEnemy knows there are no enemies
-					enemiesRemaining--;
-				}
-				//enemies 1, 3 die after 3 hits
-				else if(e->hitsTaken == 1) {
-					e->active = 0;
-					num = -1; //reset num so spawnEnemy knows there are no enemies
-					enemiesRemaining--;	
-				}
+				// if ((e->num % 2 == 0) && e->hitsTaken == 1) {
+				// 	e->active = 0; 
+				// 	enemiesRemaining--;
+				// }
+				// //enemies 1, 3 die after 3 hits
+				// else if(e->hitsTaken == 1) {
+				// 	e->active = 0;
+				// 	enemiesRemaining--;	
+				// }
 			}
 		}
 	}
 }
 
-void drawEnemy(ENEMY * e){
+void drawEnemy(){
 	int r = 0;
 	int c = 0;
-	if (num == 0){ //enemy type 1
-		c = 4;
-		r = 24;
-	} else if (num == 1){ //enemy type 2
-		c = 8;
-		r = 24;
-	} else if (num == 2){ //enemy type 3
-		c = 0;
-		r = 28;
-	} else if (num == 3){ //enemy type 4
-		c = 4;
-		r = 28;
-	} else if (num == 4){ //enemy type 4
-		c = 8;
-		r = 28;
+	for (int i = 0; i < ENEMYCOUNT; i++){
+		if (enemies[i].active == 1){
+			if (enemies[i].num == 0){ //enemy type 1
+				c = 4;
+				r = 24;
+			} else if (enemies[i].num == 1){ //enemy type 2
+				c = 8;
+				r = 24;
+			} else if (enemies[i].num == 2){ //enemy type 3
+				c = 0;
+				r = 28;
+			} else if (enemies[i].num == 3){ //enemy type 4
+				c = 4;
+				r = 28;
+			} else if (enemies[i].num == 4){ //enemy type 4
+				c = 8;
+				r = 28;
+			}
+			shadowOAM[10 + i].attr0 = (ROWMASK & enemies[i].row) | ATTR0_4BPP | ATTR0_SQUARE;
+			shadowOAM[10 + i].attr1 = (COLMASK & enemies[i].col) | ATTR1_MEDIUM;
+			shadowOAM[10 + i].attr2 = ATTR2_TILEID(c,r);
+		} else {
+			shadowOAM[10 + i].attr0 = ATTR0_HIDE;
+		}
 	}
-	if (e->active){
-		shadowOAM[10].attr0 = (ROWMASK & e->row) | ATTR0_4BPP | ATTR0_SQUARE;
-		shadowOAM[10].attr1 = (COLMASK & e->col) | ATTR1_MEDIUM;
-		shadowOAM[10].attr2 = ATTR2_TILEID(c,r);
-	} 
+	// if (e->active){
+	// 	shadowOAM[10].attr0 = (ROWMASK & e->row) | ATTR0_4BPP | ATTR0_SQUARE;
+	// 	shadowOAM[10].attr1 = (COLMASK & e->col) | ATTR1_MEDIUM;
+	// 	shadowOAM[10].attr2 = ATTR2_TILEID(c,r);
+	// } 
 	// else {
 	// 	shadowOAM[10].attr0 = ATTR0_HIDE;
 	// }

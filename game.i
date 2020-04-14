@@ -947,6 +947,7 @@ typedef struct {
     int height;
     int hitsTaken;
     int active;
+    int num;
 } ENEMY;
 
 typedef struct {
@@ -969,7 +970,7 @@ typedef struct {
     int active;
     int powerupType;
 }POWERUP;
-# 57 "game.h"
+# 58 "game.h"
 extern int vOff;
 extern int hOff;
 extern OBJ_ATTR shadowOAM[128];
@@ -981,6 +982,7 @@ extern int fast;
 extern int slow;
 extern int box;
 extern int attack;
+extern int activeEnemies;
 
 
 void initGame();
@@ -995,12 +997,12 @@ void drawDoctor();
 void initEnemy();
 void spawnEnemy();
 void updateEnemy(ENEMY *);
-void drawEnemy(ENEMY *);
+void drawEnemy();
 
 void initPill();
 void firePill();
 void updatePill(PILL *);
-void drawPill(PILL *);
+void drawPill();
 
 void initPowerup();
 void spawnPowerup(POWERUP *);
@@ -1065,7 +1067,7 @@ extern const signed char bubblePop[2117];
 OBJ_ATTR shadowOAM[128];
 DOCSPRITE doctor;
 POWERUP powerups[5];
-ENEMY enemies[5];
+ENEMY enemies[2];
 PILL pills[5];
 int num;
 enum {SPRITERIGHT,SPRITELEFT, SPRITESHIELDRIGHT,SPRITESHIELDLEFT,SPRITEIDLE};
@@ -1074,6 +1076,7 @@ int frameCounter;
 int enemiesRemaining;
 int cheat = 0;
 int randPowerup;
+int activeEnemies;
 
 void initGame() {
  DMANow(3, skyPal, ((unsigned short *)0x5000000), 512/2);
@@ -1089,7 +1092,7 @@ void initGame() {
 
  hOff = 0;
  frameCounter = 0;
- enemiesRemaining = 5 * 2;
+ enemiesRemaining = 2 * 2;
  num = -1;
 
  initDoctor();
@@ -1105,10 +1108,10 @@ void updateGame(){
  for (int i = 0; i < 5; i++){
   updatePill(&pills[i]);
  }
- for (int i = 0; i < 5; i++){
+ for (int i = 0; i < 2; i++){
   updateEnemy(&enemies[i]);
  }
-# 66 "game.c"
+# 67 "game.c"
  if ((!(~(oldButtons)&((1<<1))) && (~buttons & ((1<<1))))){
   if (cheat == 0){
    cheat = 1;
@@ -1122,7 +1125,7 @@ void drawGame(){
  for (int i = 0; i < 5; i++){
   drawPill(&pills[i]);
  }
- for (int i = 0; i < 5; i++){
+ for (int i = 0; i < 2; i++){
   drawEnemy(&enemies[i]);
  }
 
@@ -1217,7 +1220,7 @@ void drawDoctor(){
  shadowOAM[0].attr1 = doctor.col | (2<<14);
  shadowOAM[0].attr2 = ((doctor.aniState * 4)*32+(doctor.curFrame * 4));
 }
-# 227 "game.c"
+# 228 "game.c"
 void initPill(){
  for (int i = 0; i < 5; i++){
   pills[i].height = 8;
@@ -1255,16 +1258,20 @@ void updatePill(PILL *p){
   }
  }
 }
-void drawPill(PILL * p){
- if (p->active){
-  shadowOAM[1].attr0 = (0xFF & p->row) | (0<<13) | (0<<14);
-  shadowOAM[1].attr1 = (0x1FF & p->col) | (2<<14);
-  shadowOAM[1].attr2 = ((16)*32+(4));
+void drawPill(){
+ for (int i = 0; i < 5; i++){
+  if (pills[i].active){
+   shadowOAM[1 + i].attr0 = (0xFF & pills[i].row) | (0<<13) | (0<<14);
+   shadowOAM[1 + i].attr1 = (0x1FF & pills[i].col) | (2<<14);
+   shadowOAM[1 + i].attr2 = ((16)*32+(4));
+  } else {
+   shadowOAM[1 + i].attr0 = (2<<8);
+  }
  }
 }
 void initEnemy(){
 
- for (int i = 0; i < 5; i++){
+ for (int i = 0; i < 2; i++){
   enemies[i].row = 160 - 31;
   enemies[i].col = -240;
   enemies[i].cdel = 1;
@@ -1277,22 +1284,18 @@ void initEnemy(){
 }
 
 void spawnEnemy() {
- int randNum = rand() % 10;
+ int randNum = rand() % 50;
 
- if (frameCounter % randNum == 0){
-  for (int i = 0; i < 5; i++){
+ if (frameCounter % 50 == 0){
+  for (int i = 0; i < 2; i++){
 
-   if (enemies[i].active == 0 && num == -1){
+   if (enemies[i].active == 0 && activeEnemies < 3){
     enemies[i].active = 1;
-
-    num = (rand() % 5);
-    if (randNum % 2 == 0){
-     enemies[i].col = 240;
-     enemies[i].cdel = -1;
-    } else {
-     enemies[i].col = 0;
-     enemies[i].cdel = 1;
-    }
+    enemies[i].num = (rand() % 5);
+    enemies[i].col = 240;
+    enemies[i].cdel = -1;
+    activeEnemies += 1;
+# 311 "game.c"
     break;
    }
   }
@@ -1308,50 +1311,43 @@ void updateEnemy(ENEMY * e){
   for (int i = 0; i < 5; i++){
    if (pills[i].active && collision(e->col, e->row, e->width, e->height,
    pills[i].col, pills[i].row, pills[i].width, pills[i].height)){
-    e->hitsTaken += 1;
+    e->active = 0;
+    activeEnemies -= 1;
+
     pills[i].active = 0;
-
-    if ((num % 2 == 0) && e->hitsTaken == 1) {
-     e->active = 0;
-     num = -1;
-     enemiesRemaining--;
-    }
-
-    else if(e->hitsTaken == 1) {
-     e->active = 0;
-     num = -1;
-     enemiesRemaining--;
-    }
+# 340 "game.c"
    }
   }
  }
 }
 
-void drawEnemy(ENEMY * e){
+void drawEnemy(){
  int r = 0;
  int c = 0;
- if (num == 0){
-  c = 4;
-  r = 24;
- } else if (num == 1){
-  c = 8;
-  r = 24;
- } else if (num == 2){
-  c = 0;
-  r = 28;
- } else if (num == 3){
-  c = 4;
-  r = 28;
- } else if (num == 4){
-  c = 8;
-  r = 28;
+ for (int i = 0; i < 2; i++){
+  if (enemies[i].active == 1){
+   if (enemies[i].num == 0){
+    c = 4;
+    r = 24;
+   } else if (enemies[i].num == 1){
+    c = 8;
+    r = 24;
+   } else if (enemies[i].num == 2){
+    c = 0;
+    r = 28;
+   } else if (enemies[i].num == 3){
+    c = 4;
+    r = 28;
+   } else if (enemies[i].num == 4){
+    c = 8;
+    r = 28;
+   }
+   shadowOAM[10 + i].attr0 = (0xFF & enemies[i].row) | (0<<13) | (0<<14);
+   shadowOAM[10 + i].attr1 = (0x1FF & enemies[i].col) | (2<<14);
+   shadowOAM[10 + i].attr2 = ((r)*32+(c));
+  } else {
+   shadowOAM[10 + i].attr0 = (2<<8);
+  }
  }
- if (e->active){
-  shadowOAM[10].attr0 = (0xFF & e->row) | (0<<13) | (0<<14);
-  shadowOAM[10].attr1 = (0x1FF & e->col) | (2<<14);
-  shadowOAM[10].attr2 = ((r)*32+(c));
- }
-
-
-
+# 381 "game.c"
 }
