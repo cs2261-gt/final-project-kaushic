@@ -1122,12 +1122,8 @@ void updateGame(){
 }
 void drawGame(){
  drawDoctor();
- for (int i = 0; i < 5; i++){
-  drawPill(&pills[i]);
- }
- for (int i = 0; i < 2; i++){
-  drawEnemy(&enemies[i]);
- }
+ drawPill();
+ drawEnemy();
 
 
 
@@ -1220,7 +1216,7 @@ void drawDoctor(){
  shadowOAM[0].attr1 = doctor.col | (2<<14);
  shadowOAM[0].attr2 = ((doctor.aniState * 4)*32+(doctor.curFrame * 4));
 }
-# 228 "game.c"
+# 224 "game.c"
 void initPill(){
  for (int i = 0; i < 5; i++){
   pills[i].height = 8;
@@ -1292,10 +1288,18 @@ void spawnEnemy() {
    if (enemies[i].active == 0 && activeEnemies < 3){
     enemies[i].active = 1;
     enemies[i].num = (rand() % 5);
-    enemies[i].col = 240;
-    enemies[i].cdel = -1;
+
+
     activeEnemies += 1;
-# 311 "game.c"
+
+    if (randNum % 2 == 0){
+     enemies[i].col = 240;
+     enemies[i].cdel = -1;
+    }
+    else {
+     enemies[i].col = 0;
+     enemies[i].cdel = 1;
+    }
     break;
    }
   }
@@ -1315,7 +1319,7 @@ void updateEnemy(ENEMY * e){
     activeEnemies -= 1;
 
     pills[i].active = 0;
-# 340 "game.c"
+# 336 "game.c"
    }
   }
  }
@@ -1349,5 +1353,5 @@ void drawEnemy(){
    shadowOAM[10 + i].attr0 = (2<<8);
   }
  }
-# 381 "game.c"
+# 377 "game.c"
 }

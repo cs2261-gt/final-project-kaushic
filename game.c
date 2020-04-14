@@ -74,12 +74,8 @@ void updateGame(){
 }
 void drawGame(){
 	drawDoctor();
-	for (int i = 0; i < PILLCOUNT; i++){
-		drawPill(&pills[i]);
-	}
-	for (int i = 0; i < ENEMYCOUNT; i++){
-		drawEnemy(&enemies[i]);
-	}
+	drawPill();
+	drawEnemy();
 /* 	for (int i = 0; i < POWERUPCOUNT; i++){
 		drawPowerup(&powerups[i]);
 	} */
@@ -296,18 +292,18 @@ void spawnEnemy() {
 			if (enemies[i].active == 0 && activeEnemies < 3){
 				enemies[i].active = 1;
 				enemies[i].num = (rand() % 5);
-				enemies[i].col = SCREENWIDTH;
-				enemies[i].cdel = -1;
+				// enemies[i].col = SCREENWIDTH;
+				// enemies[i].cdel = -1;
 				activeEnemies += 1;
 				//picks a random enemy type
-				// if (randNum % 2 == 0){ //enemy comes from the right
-				// 	enemies[i].col = SCREENWIDTH;
-				// 	enemies[i].cdel = -1;
-				// } 
-				// else { //enemy comes from the left
-				// 	enemies[i].col = 0;
-				// 	enemies[i].cdel = 1;
-				// }
+				if (randNum % 2 == 0){ //enemy comes from the right
+					enemies[i].col = SCREENWIDTH;
+					enemies[i].cdel = -1;
+				} 
+				else { //enemy comes from the left
+					enemies[i].col = 0;
+					enemies[i].cdel = 1;
+				}
 				break;
 			}
 		}
