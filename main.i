@@ -217,28 +217,54 @@ typedef struct {
     int height;
     int active;
 }PILL;
-# 45 "game.h"
+
+typedef struct {
+    int row;
+    int col;
+    int cdel;
+    int rdel;
+    int width;
+    int height;
+    int active;
+    int powerupType;
+}POWERUP;
+# 57 "game.h"
 extern int vOff;
 extern int hOff;
 extern OBJ_ATTR shadowOAM[128];
 extern int frameCounter;
 extern PILL pills[5];
+extern POWERUP powerups[5];
+extern int bubbles;
+extern int fast;
+extern int slow;
+extern int box;
+extern int attack;
 
 
 void initGame();
 void updateGame();
 void drawGame();
 void updateBkgd();
+
 void initDoctor();
 void updateDoctor();
 void drawDoctor();
+
 void initEnemy();
+void spawnEnemy();
 void updateEnemy(ENEMY *);
 void drawEnemy(ENEMY *);
+
 void initPill();
 void firePill();
 void updatePill(PILL *);
 void drawPill(PILL *);
+
+void initPowerup();
+void spawnPowerup(POWERUP *);
+void updatePowerup(POWERUP *);
+void drawPowerup(POWERUP *);
 # 10 "main.c" 2
 # 1 "sound.h" 1
 SOUND soundA;
@@ -447,7 +473,7 @@ void game() {
 
         playSoundA(winSong, 38896, 0);
         goToWin();
-    } else if ((!(~(oldButtons)&((1<<1))) && (~buttons & ((1<<1))))){
+    } else if ((!(~(oldButtons)&((1<<6))) && (~buttons & ((1<<6))))){
         stopSound();
 
         playSoundA(loseSong, 64298, 0);

@@ -794,11 +794,11 @@ game:
 	ands	r4, r2, #4
 	beq	.L95
 .L82:
-	tst	r3, #2
+	tst	r3, #64
 	beq	.L80
 	ldr	r3, .L97+24
 	ldrh	r2, [r3]
-	ands	r4, r2, #2
+	ands	r4, r2, #64
 	beq	.L96
 .L80:
 	pop	{r4, lr}

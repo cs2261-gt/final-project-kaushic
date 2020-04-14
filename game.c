@@ -9,6 +9,7 @@
 #include "bubblePop.h"
 OBJ_ATTR shadowOAM[128];
 DOCSPRITE doctor;
+POWERUP powerups[POWERUPCOUNT];
 ENEMY enemies[ENEMYCOUNT];
 PILL pills[PILLCOUNT];
 int num;
@@ -17,6 +18,7 @@ enum {SPRITERIGHT,SPRITELEFT, SPRITESHIELDRIGHT,SPRITESHIELDLEFT,SPRITEIDLE};
 int frameCounter;
 int enemiesRemaining;
 int cheat = 0;
+int randPowerup;
 
 void initGame() {
 	DMANow(3, skyPal, PALETTE, skyPalLen/2);
@@ -38,6 +40,7 @@ void initGame() {
 	initDoctor();
 	initEnemy();
 	initPill();
+	//initPowerup();
 }
 void updateGame(){
 	frameCounter++;
@@ -50,7 +53,17 @@ void updateGame(){
 	for (int i = 0; i < ENEMYCOUNT; i++){
 		updateEnemy(&enemies[i]);
 	}
-	if (BUTTON_PRESSED(BUTTON_UP)){
+/* 	for (int i = 0; i < POWERUPCOUNT; i++){
+		updatePowerup(&powerups[i]);
+	}
+	if (frameCounter == 50){
+		frameCounter = 0;
+		randPowerup = rand() % 5;
+		if (!powerups[randPowerup].active){
+			spawnPowerup(&powerups[randPowerup]);
+		}
+	} */
+	if (BUTTON_PRESSED(BUTTON_B)){
 		if (cheat == 0){
 			cheat = 1;
 		} else {
@@ -66,6 +79,9 @@ void drawGame(){
 	for (int i = 0; i < ENEMYCOUNT; i++){
 		drawEnemy(&enemies[i]);
 	}
+/* 	for (int i = 0; i < POWERUPCOUNT; i++){
+		drawPowerup(&powerups[i]);
+	} */
 }
 void updateBkgd(){
     REG_BG0HOFF = hOff;
@@ -155,6 +171,59 @@ void drawDoctor(){
 	shadowOAM[0].attr1 = doctor.col | ATTR1_MEDIUM;
 	shadowOAM[0].attr2 = ATTR2_TILEID(doctor.curFrame *  4, doctor.aniState *  4);
 }
+/* void initPowerup(){
+	for (int i = 0; i < POWERUPCOUNT; i++){
+		powerups[i].row = -1;
+		powerups[i].col = -1;
+		powerups[i].cdel = 1;
+		powerups[i].rdel = 1;
+		powerups[i].width = 16;
+		powerups[i].height = 16;
+		powerups[i].active = 0;
+		powerups[i].powerupType = -1;
+	}
+}
+void spawnPowerup(POWERUP *w){
+	int randColIndex = rand() % SCREENWIDTH;
+	w->col = randColIndex;
+	w->row = 10;
+	w->active = 1;
+	w->powerupType = randPowerup;
+}
+void updatePowerup(POWERUP *w){
+	if (w->active){
+		w->row += w->rdel;
+		if (w->row >= MAPHEIGHT){
+			w->active = 0;
+		}
+		//collision logic for powerups
+	}
+}
+void drawPowerup(POWERUP *w){
+	int r = 0;
+	int c = 0;
+	if (num == 0){
+		c = 0;
+		r = 16;
+	} else if (num == 1){
+		c = 0;
+		r = 20;
+	} else if (num == 2){
+		c = 4;
+		r = 20;
+	} else if (num == 3){
+		c = 8;
+		r = 20;
+	} else if (num == 4){
+		c = 0;
+		r = 24;
+	}
+	if (w->active){
+		shadowOAM[20].attr0 = (ROWMASK & w->row) | ATTR0_4BPP | ATTR0_SQUARE;
+		shadowOAM[20].attr1 = (COLMASK & w->col) | ATTR1_MEDIUM;
+		shadowOAM[20].attr2 = ATTR2_TILEID(c,r);
+	}
+} */
 void initPill(){
 	for (int i = 0; i < PILLCOUNT; i++){
 		pills[i].height = 8;
@@ -171,7 +240,7 @@ void firePill(){
 		if (!pills[i].active){
 			pills[i].row = SCREENHEIGHT - 35;
 			if (doctor.aniState == SPRITERIGHT || doctor.aniState == SPRITESHIELDRIGHT){
-				pills[i].col = doctor.col+5;
+				pills[i].col = doctor.col+6;
 				pills[i].cdel = 2;
 			} else if (doctor.aniState == SPRITELEFT || doctor.aniState == SPRITESHIELDLEFT){
 				pills[i].col = doctor.col - 18;
@@ -200,30 +269,33 @@ void drawPill(PILL * p){
 	}
 }
 void initEnemy(){
+	//initializes enemy
 	for (int i = 0; i < ENEMYCOUNT; i++){
 		enemies[i].row = SCREENHEIGHT - 31;
-		enemies[i].col = SCREENWIDTH + 100;
+		enemies[i].col = -SCREENWIDTH;
 		enemies[i].cdel = 1;
 		enemies[i].rdel = 1;
 		enemies[i].width = 32;
 		enemies[i].height = 32;
-		enemies[i].hitsTaken = -1;
+		enemies[i].hitsTaken = 0;
 		enemies[i].active = 0;
 	}
 }
 //generates a random enemy
 void spawnEnemy() {
 	int randNum  = rand() % 10;
+	//spawns enemies at random time intervals
 	if (frameCounter % randNum == 0){
 		for (int i = 0; i < ENEMYCOUNT; i++){
+			//if an enemy is inactive and there currently isn't an enemy on screen, initalize one
 			if (enemies[i].active == 0 && num == -1){
 				enemies[i].active = 1;
-				enemies[i].hitsTaken = 0;
+				//picks a random enemy type
 				num = (rand() % 5);
-				if (randNum % 2 == 0){
+				if (randNum % 2 == 0){ //enemy comes from the right
 					enemies[i].col = SCREENWIDTH;
 					enemies[i].cdel = -1;
-				} else {
+				} else { //enemy comes from the left
 					enemies[i].col = 0;
 					enemies[i].cdel = 1;
 				}
@@ -234,27 +306,26 @@ void spawnEnemy() {
 }
 void updateEnemy(ENEMY * e){
 	if (e->active){
-		if (e->col < SCREENWIDTH || e->col > 0){
-			e->col += e->cdel;
-		} if (e->col < 0 || e->col > SCREENWIDTH){
+		e->col += e->cdel;
+		if (e->col < 1 || e->col > SCREENWIDTH){ //enemy is at left or right edge
 			e->active = 0;
 		}
 		//handle pill and enemy collision
 		for (int i = 0; i < PILLCOUNT; i++){
-			if (pills[i].active && collision(e->row, e->col, e->width, e->height,
+			if (pills[i].active && collision(e->col, e->row, e->width, e->height,
 			pills[i].col, pills[i].row, pills[i].width, pills[i].height)){
 				e->hitsTaken += 1;
 				pills[i].active = 0;
 				//enemies 0, 2, 4 die after 1 hit
-				if ((num == 0 || num == 2 || num == 4)) {
+				if ((num % 2 == 0) && e->hitsTaken == 1) {
 					e->active = 0; 
-					num = -1;
+					num = -1; //reset num so spawnEnemy knows there are no enemies
 					enemiesRemaining--;
 				}
 				//enemies 1, 3 die after 3 hits
-				if ((num == 1 || num == 3) && e-> hitsTaken == 2) {
+				else if(e->hitsTaken == 1) {
 					e->active = 0;
-					num = -1;
+					num = -1; //reset num so spawnEnemy knows there are no enemies
 					enemiesRemaining--;	
 				}
 			}
@@ -265,19 +336,19 @@ void updateEnemy(ENEMY * e){
 void drawEnemy(ENEMY * e){
 	int r = 0;
 	int c = 0;
-	if (num == 0){
+	if (num == 0){ //enemy type 1
 		c = 4;
 		r = 24;
-	} else if (num == 1){
+	} else if (num == 1){ //enemy type 2
 		c = 8;
 		r = 24;
-	} else if (num == 2){
+	} else if (num == 2){ //enemy type 3
 		c = 0;
 		r = 28;
-	} else if (num == 3){
+	} else if (num == 3){ //enemy type 4
 		c = 4;
 		r = 28;
-	} else if (num == 4){
+	} else if (num == 4){ //enemy type 4
 		c = 8;
 		r = 28;
 	}
@@ -285,5 +356,8 @@ void drawEnemy(ENEMY * e){
 		shadowOAM[10].attr0 = (ROWMASK & e->row) | ATTR0_4BPP | ATTR0_SQUARE;
 		shadowOAM[10].attr1 = (COLMASK & e->col) | ATTR1_MEDIUM;
 		shadowOAM[10].attr2 = ATTR2_TILEID(c,r);
-	}
+	} 
+	// else {
+	// 	shadowOAM[10].attr0 = ATTR0_HIDE;
+	// }
 }

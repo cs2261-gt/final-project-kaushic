@@ -947,7 +947,6 @@ typedef struct {
     int height;
     int hitsTaken;
     int active;
-    int screenCol;
 } ENEMY;
 
 typedef struct {
@@ -959,29 +958,54 @@ typedef struct {
     int height;
     int active;
 }PILL;
-# 46 "game.h"
+
+typedef struct {
+    int row;
+    int col;
+    int cdel;
+    int rdel;
+    int width;
+    int height;
+    int active;
+    int powerupType;
+}POWERUP;
+# 57 "game.h"
 extern int vOff;
 extern int hOff;
 extern OBJ_ATTR shadowOAM[128];
 extern int frameCounter;
 extern PILL pills[5];
+extern POWERUP powerups[5];
+extern int bubbles;
+extern int fast;
+extern int slow;
+extern int box;
+extern int attack;
 
 
 void initGame();
 void updateGame();
 void drawGame();
 void updateBkgd();
+
 void initDoctor();
 void updateDoctor();
 void drawDoctor();
+
 void initEnemy();
 void spawnEnemy();
 void updateEnemy(ENEMY *);
 void drawEnemy(ENEMY *);
+
 void initPill();
 void firePill();
 void updatePill(PILL *);
 void drawPill(PILL *);
+
+void initPowerup();
+void spawnPowerup(POWERUP *);
+void updatePowerup(POWERUP *);
+void drawPowerup(POWERUP *);
 # 4 "game.c" 2
 # 1 "sky.h" 1
 # 22 "sky.h"
@@ -1040,6 +1064,7 @@ extern const signed char bubblePop[2117];
 # 10 "game.c" 2
 OBJ_ATTR shadowOAM[128];
 DOCSPRITE doctor;
+POWERUP powerups[5];
 ENEMY enemies[5];
 PILL pills[5];
 int num;
@@ -1048,6 +1073,7 @@ enum {SPRITERIGHT,SPRITELEFT, SPRITESHIELDRIGHT,SPRITESHIELDLEFT,SPRITEIDLE};
 int frameCounter;
 int enemiesRemaining;
 int cheat = 0;
+int randPowerup;
 
 void initGame() {
  DMANow(3, skyPal, ((unsigned short *)0x5000000), 512/2);
@@ -1069,6 +1095,7 @@ void initGame() {
  initDoctor();
  initEnemy();
  initPill();
+
 }
 void updateGame(){
  frameCounter++;
@@ -1081,7 +1108,8 @@ void updateGame(){
  for (int i = 0; i < 5; i++){
   updateEnemy(&enemies[i]);
  }
- if ((!(~(oldButtons)&((1<<6))) && (~buttons & ((1<<6))))){
+# 66 "game.c"
+ if ((!(~(oldButtons)&((1<<1))) && (~buttons & ((1<<1))))){
   if (cheat == 0){
    cheat = 1;
   } else {
@@ -1097,6 +1125,9 @@ void drawGame(){
  for (int i = 0; i < 5; i++){
   drawEnemy(&enemies[i]);
  }
+
+
+
 }
 void updateBkgd(){
     (*(volatile unsigned short *)0x04000010) = hOff;
@@ -1186,6 +1217,7 @@ void drawDoctor(){
  shadowOAM[0].attr1 = doctor.col | (2<<14);
  shadowOAM[0].attr2 = ((doctor.aniState * 4)*32+(doctor.curFrame * 4));
 }
+# 227 "game.c"
 void initPill(){
  for (int i = 0; i < 5; i++){
   pills[i].height = 8;
@@ -1202,7 +1234,7 @@ void firePill(){
   if (!pills[i].active){
    pills[i].row = 160 - 35;
    if (doctor.aniState == SPRITERIGHT || doctor.aniState == SPRITESHIELDRIGHT){
-    pills[i].col = doctor.col+5;
+    pills[i].col = doctor.col+6;
     pills[i].cdel = 2;
    } else if (doctor.aniState == SPRITELEFT || doctor.aniState == SPRITESHIELDLEFT){
     pills[i].col = doctor.col - 18;
@@ -1231,26 +1263,28 @@ void drawPill(PILL * p){
  }
 }
 void initEnemy(){
+
  for (int i = 0; i < 5; i++){
   enemies[i].row = 160 - 31;
-  enemies[i].col = 240 + 100;
+  enemies[i].col = -240;
   enemies[i].cdel = 1;
   enemies[i].rdel = 1;
   enemies[i].width = 32;
   enemies[i].height = 32;
-  enemies[i].hitsTaken = -1;
+  enemies[i].hitsTaken = 0;
   enemies[i].active = 0;
-  enemies[i].screenCol = 0;
  }
 }
 
 void spawnEnemy() {
  int randNum = rand() % 10;
+
  if (frameCounter % randNum == 0){
   for (int i = 0; i < 5; i++){
+
    if (enemies[i].active == 0 && num == -1){
     enemies[i].active = 1;
-    enemies[i].hitsTaken = 0;
+
     num = (rand() % 5);
     if (randNum % 2 == 0){
      enemies[i].col = 240;
@@ -1266,25 +1300,24 @@ void spawnEnemy() {
 }
 void updateEnemy(ENEMY * e){
  if (e->active){
-  if (e->col < 240 || e->col > 0){
-   e->col += e->cdel;
-  } if (e->col < 0 || e->col > 240){
+  e->col += e->cdel;
+  if (e->col < 1 || e->col > 240){
    e->active = 0;
   }
 
   for (int i = 0; i < 5; i++){
-   if (pills[i].active && collision(e->row, e->col, e->width, e->height,
+   if (pills[i].active && collision(e->col, e->row, e->width, e->height,
    pills[i].col, pills[i].row, pills[i].width, pills[i].height)){
     e->hitsTaken += 1;
     pills[i].active = 0;
 
-    if ((num == 0 || num == 2 || num == 4)) {
+    if ((num % 2 == 0) && e->hitsTaken == 1) {
      e->active = 0;
      num = -1;
      enemiesRemaining--;
     }
 
-    if ((num == 1 || num == 3) && e-> hitsTaken == 2) {
+    else if(e->hitsTaken == 1) {
      e->active = 0;
      num = -1;
      enemiesRemaining--;
@@ -1292,7 +1325,6 @@ void updateEnemy(ENEMY * e){
    }
   }
  }
- e->screenCol = e->col - hOff;
 }
 
 void drawEnemy(ENEMY * e){
@@ -1319,4 +1351,7 @@ void drawEnemy(ENEMY * e){
   shadowOAM[10].attr1 = (0x1FF & e->col) | (2<<14);
   shadowOAM[10].attr2 = ((r)*32+(c));
  }
+
+
+
 }

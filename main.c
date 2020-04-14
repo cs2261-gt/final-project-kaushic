@@ -168,7 +168,7 @@ void game() {
         //play win music
         playSoundA(winSong, WINSONGLEN, 0);
         goToWin();
-    } else if (BUTTON_PRESSED(BUTTON_B)){
+    } else if (BUTTON_PRESSED(BUTTON_UP)){
         stopSound();
         //play lose music
         playSoundA(loseSong, LOSESONGLEN, 0);
