@@ -67,7 +67,9 @@ extern int slow;
 extern int box;
 extern int attack;
 extern int activeEnemies;
-
+extern int activePowerups;
+extern int boxesCollected;
+extern int pillSpeed;
 //Prototypes
 void initGame();
 void updateGame();
@@ -89,6 +91,6 @@ void updatePill(PILL *);
 void drawPill();
 //powerups
 void initPowerup();
-void spawnPowerup(POWERUP *);
+void spawnPowerup();
 void updatePowerup(POWERUP *);
-void drawPowerup(POWERUP *);
+void drawPowerup();

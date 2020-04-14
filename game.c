@@ -13,6 +13,7 @@ POWERUP powerups[POWERUPCOUNT];
 ENEMY enemies[ENEMYCOUNT];
 PILL pills[PILLCOUNT];
 int num;
+int bubbles;
 enum {SPRITERIGHT,SPRITELEFT, SPRITESHIELDRIGHT,SPRITESHIELDLEFT,SPRITEIDLE};
 
 int frameCounter;
@@ -20,6 +21,9 @@ int enemiesRemaining;
 int cheat = 0;
 int randPowerup;
 int activeEnemies;
+int activePowerups;
+int boxesCollected;
+int pillSpeed;
 
 void initGame() {
 	DMANow(3, skyPal, PALETTE, skyPalLen/2);
@@ -37,33 +41,32 @@ void initGame() {
 	frameCounter = 0;
 	enemiesRemaining = ENEMYCOUNT * 2;
 	num = -1;
+	boxesCollected = 0;
+	bubbles = 0;
+	pillSpeed = 2;
    	//hideSprites();
 	initDoctor();
 	initEnemy();
 	initPill();
-	//initPowerup();
+	initPowerup();
 }
 void updateGame(){
 	frameCounter++;
 	updateBkgd();
 	updateDoctor();
-	spawnEnemy();
+	//spawnEnemy();
+	//spawnPowerup(); 
 	for (int i = 0; i < PILLCOUNT; i++){
 		updatePill(&pills[i]);
 	}
 	for (int i = 0; i < ENEMYCOUNT; i++){
+		spawnEnemy();
 		updateEnemy(&enemies[i]);
 	}
-/* 	for (int i = 0; i < POWERUPCOUNT; i++){
+	for (int i = 0; i < POWERUPCOUNT; i++){
+		spawnPowerup(); 
 		updatePowerup(&powerups[i]);
 	}
-	if (frameCounter == 50){
-		frameCounter = 0;
-		randPowerup = rand() % 5;
-		if (!powerups[randPowerup].active){
-			spawnPowerup(&powerups[randPowerup]);
-		}
-	} */
 	if (BUTTON_PRESSED(BUTTON_B)){
 		if (cheat == 0){
 			cheat = 1;
@@ -76,9 +79,7 @@ void drawGame(){
 	drawDoctor();
 	drawPill();
 	drawEnemy();
-/* 	for (int i = 0; i < POWERUPCOUNT; i++){
-		drawPowerup(&powerups[i]);
-	} */
+	drawPowerup();
 }
 void updateBkgd(){
     REG_BG0HOFF = hOff;
@@ -160,7 +161,7 @@ void updateDoctor(){
 		playSoundB(bubblePop, BUBBLEPOPLEN, 0);
 		doctor.pillTimer = 0;
 	}
-	doctor.pillTimer++;
+	doctor.pillTimer+= pillSpeed;
 	doctor.screenCol = doctor.col - hOff;
 }
 void drawDoctor(){
@@ -168,7 +169,7 @@ void drawDoctor(){
 	shadowOAM[0].attr1 = doctor.col | ATTR1_MEDIUM;
 	shadowOAM[0].attr2 = ATTR2_TILEID(doctor.curFrame *  4, doctor.aniState *  4);
 }
-/* void initPowerup(){
+void initPowerup(){
 	for (int i = 0; i < POWERUPCOUNT; i++){
 		powerups[i].row = -1;
 		powerups[i].col = -1;
@@ -180,47 +181,89 @@ void drawDoctor(){
 		powerups[i].powerupType = -1;
 	}
 }
-void spawnPowerup(POWERUP *w){
-	int randColIndex = rand() % SCREENWIDTH;
-	w->col = randColIndex;
-	w->row = 10;
-	w->active = 1;
-	w->powerupType = randPowerup;
+void spawnPowerup(){
+	int randColIndex = rand() % 220;
+	if (randColIndex == SCREENWIDTH){
+		randColIndex = 200;
+	} else if (randColIndex == 0){
+		randColIndex = 0 + 20;
+	}
+	//spawns enemies at random time intervals
+	if (frameCounter % 50 == 0){
+		for (int i = 0; i < POWERUPCOUNT; i++){
+			if (powerups[i].active == 0 && activePowerups < 3){
+				powerups[i].col = randColIndex;
+				powerups[i].row = 10;
+				powerups[i].active = 1;
+				powerups[i].powerupType = (rand() % 5);
+				activePowerups += 1;
+			}
+			break;
+		}
+	}
 }
 void updatePowerup(POWERUP *w){
 	if (w->active){
 		w->row += w->rdel;
-		if (w->row >= MAPHEIGHT){
+		if (w->row >= SCREENHEIGHT){
 			w->active = 0;
+			activePowerups -= 1;
 		}
 		//collision logic for powerups
+		for (int i = 0; i < POWERUPCOUNT; i++){
+			if (powerups[i].active && collision(powerups[i].col, powerups[i].row, powerups[i].width, powerups[i].height, 
+				doctor.col, doctor.row, doctor.width, doctor.height)){
+					w->active = 0;
+					activePowerups -= 1;
+					if (powerups[i].powerupType == 0){
+						boxesCollected += 1;
+					}
+					if (powerups[i].powerupType == 1){
+						pillSpeed = 1; 
+					}
+					if (powerups[i].powerupType == 2){
+						pillSpeed = 4;
+					}
+					if (powerups[i].powerupType == 3){
+						bubbles = 0;
+					}
+					if (powerups[i].powerupType == 4){
+						bubbles = 1;
+						pillSpeed = 1;
+					}
+				}
+		}
 	}
 }
-void drawPowerup(POWERUP *w){
+void drawPowerup(){
 	int r = 0;
 	int c = 0;
-	if (num == 0){
-		c = 0;
-		r = 16;
-	} else if (num == 1){
-		c = 0;
-		r = 20;
-	} else if (num == 2){
-		c = 4;
-		r = 20;
-	} else if (num == 3){
-		c = 8;
-		r = 20;
-	} else if (num == 4){
-		c = 0;
-		r = 24;
+	for (int i = 0; i < POWERUPCOUNT; i++){
+		if (powerups[i].active == 1){
+			if (powerups[i].powerupType == 0){ //enemy type 1
+				c = 0;
+				r = 16;
+			} else if (powerups[i].powerupType == 1){ //enemy type 2
+				c = 0;
+				r = 20;
+			} else if (powerups[i].powerupType == 2){ //enemy type 3
+				c = 4;
+				r = 20;
+			} else if (powerups[i].powerupType == 3){ //enemy type 4
+				c = 8;
+				r = 20;
+			} else if (powerups[i].powerupType == 4){ //enemy type 4
+				c = 0;
+				r = 24;
+			}
+			shadowOAM[20 + i].attr0 = (ROWMASK & powerups[i].row) | ATTR0_4BPP | ATTR0_SQUARE;
+			shadowOAM[20 + i].attr1 = (COLMASK & powerups[i].col) | ATTR1_MEDIUM;
+			shadowOAM[20 + i].attr2 = ATTR2_TILEID(c,r);
+		} else {
+			shadowOAM[20 + i].attr0 = ATTR0_HIDE;
+		}
 	}
-	if (w->active){
-		shadowOAM[20].attr0 = (ROWMASK & w->row) | ATTR0_4BPP | ATTR0_SQUARE;
-		shadowOAM[20].attr1 = (COLMASK & w->col) | ATTR1_MEDIUM;
-		shadowOAM[20].attr2 = ATTR2_TILEID(c,r);
-	}
-} */
+} 
 void initPill(){
 	for (int i = 0; i < PILLCOUNT; i++){
 		pills[i].height = 8;
@@ -260,10 +303,19 @@ void updatePill(PILL *p){
 }
 void drawPill(){
 	for (int i = 0; i < PILLCOUNT; i++){
+		int c;
+		int r;
+		if (bubbles){
+			c = 8;
+			r = 16;
+		} else {
+			c = 4;
+			r = 16;
+		}
 		if (pills[i].active){
 			shadowOAM[1 + i].attr0 = (ROWMASK & pills[i].row) | ATTR0_4BPP | ATTR0_SQUARE;
 			shadowOAM[1 + i].attr1 = (COLMASK & pills[i].col) | ATTR1_MEDIUM;
-			shadowOAM[1 + i].attr2 = ATTR2_TILEID(4,16);
+			shadowOAM[1 + i].attr2 = ATTR2_TILEID(c,r);
 		} else {
 			shadowOAM[1 + i].attr0 = ATTR0_HIDE;
 		}
@@ -300,7 +352,8 @@ void spawnEnemy() {
 					enemies[i].col = SCREENWIDTH;
 					enemies[i].cdel = -1;
 				} 
-				else { //enemy comes from the left
+				else {
+				 //enemy comes from the left 
 					enemies[i].col = 0;
 					enemies[i].cdel = 1;
 				}
@@ -314,25 +367,41 @@ void updateEnemy(ENEMY * e){
 		e->col += e->cdel;
 		if (e->col < 1 || e->col > SCREENWIDTH){ //enemy is at left or right edge
 			e->active = 0;
+			activeEnemies -= 1;
 		}
 		//handle pill and enemy collision
 		for (int i = 0; i < PILLCOUNT; i++){
 			if (pills[i].active && collision(e->col, e->row, e->width, e->height,
 			pills[i].col, pills[i].row, pills[i].width, pills[i].height)){
 				e->active = 0;
-				activeEnemies -= 1;
-				//e->hitsTaken += 1;
+				e->hitsTaken += 1;
 				pills[i].active = 0;
 				//enemies 0, 2, 4 die after 1 hit
-				// if ((e->num % 2 == 0) && e->hitsTaken == 1) {
-				// 	e->active = 0; 
-				// 	enemiesRemaining--;
-				// }
-				// //enemies 1, 3 die after 3 hits
-				// else if(e->hitsTaken == 1) {
-				// 	e->active = 0;
-				// 	enemiesRemaining--;	
-				// }
+				if ((e->num % 2 == 0)) {
+					if (e->hitsTaken == 2){
+						e->active = 0;
+						activeEnemies -= 1; 
+						enemiesRemaining--;
+					}
+				}
+				//enemies 1, 3 die after 3 hits
+				else {
+					if (e->hitsTaken == 4){
+						e->active = 0; 
+						activeEnemies -= 1;
+						enemiesRemaining--;
+					}
+				}
+			}
+			if (cheat == 1 && collision(e->col, e->row, e->width, e->height,
+										doctor.col, doctor.row, doctor.width, doctor.height)){
+				if (e->col == 240){
+					e->active = 0;
+					activeEnemies -= 1;
+				} else {
+					e->cdel *= -1;
+					e->col += 5;
+				}
 			}
 		}
 	}
