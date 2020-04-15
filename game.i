@@ -1445,7 +1445,7 @@ void updateEnemy(ENEMY * e){
   }
 
   for (int i = 0; i < 5; i++){
-   if (collision(e->col, e->row, e->width, e->height, doctor.col, doctor.row, doctor.width, doctor.height) && cheat == 0){
+   if (collision(e->col, e->row, e->width, e->height, doctor.col, doctor.row, doctor.width, doctor.height)){
     collided = 1;
     blend = (rand() % 10) + 2;
    } else {
@@ -1476,12 +1476,17 @@ void updateEnemy(ENEMY * e){
    }
    if (cheat == 1 && collision(e->col, e->row, e->width, e->height,
           doctor.col, doctor.row, doctor.width, doctor.height)){
+    e->hitsTaken += 1;
     if (e->col == 240){
      e->active = 0;
      activeEnemies -= 1;
     } else {
      e->cdel *= -1;
-
+     if (e->col < doctor.col){
+      e->col -= 5;
+     } else {
+      e->col += 5;
+     }
     }
    }
   }
@@ -1516,5 +1521,5 @@ void drawEnemy(){
    shadowOAM[10 + i].attr0 = (2<<8);
   }
  }
-# 466 "game.c"
+# 471 "game.c"
 }
