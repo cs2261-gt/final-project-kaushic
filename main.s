@@ -284,19 +284,16 @@ goToGame:
 	ldr	r3, .L20+36
 	mov	lr, pc
 	bx	r3
-	ldr	r3, .L20+40
-	mov	lr, pc
-	bx	r3
 	mov	r3, #512
 	mov	r2, #117440512
 	mov	r0, #3
-	ldr	r1, .L20+44
+	ldr	r1, .L20+40
 	mov	lr, pc
 	bx	r4
 	mov	r0, #0
 	mov	r2, #1
-	ldr	r1, .L20+48
-	ldr	r3, .L20+52
+	ldr	r1, .L20+44
+	ldr	r3, .L20+48
 	str	r0, [r1]
 	str	r2, [r3]
 	pop	{r4, lr}
@@ -313,7 +310,6 @@ goToGame:
 	.word	cityTiles
 	.word	100724736
 	.word	cityMap
-	.word	hideSprites
 	.word	waitForVBlank
 	.word	shadowOAM
 	.word	hOff

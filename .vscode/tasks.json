@@ -7,8 +7,6 @@
             "label": "build run",
             "type": "shell",
             "command": "open /Users/kaushic/cs2261/visualboyadvance-m.app ./Project.gba",
-            // add the visualboyadvance-m.app exact path to the above line,
-            // in between "open" and "./Project.gba"!
             "problemMatcher": [],
             "dependsOn": [
                 "build"

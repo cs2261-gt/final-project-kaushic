@@ -70,6 +70,8 @@ extern int activeEnemies;
 extern int activePowerups;
 extern int boxesCollected;
 extern int pillSpeed;
+extern int collided;
+
 //Prototypes
 void initGame();
 void updateGame();

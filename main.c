@@ -147,7 +147,8 @@ void goToGame() {
     
     DMANow(3, cityTiles, &CHARBLOCK[1], cityTilesLen/2);
     DMANow(3, cityMap, &SCREENBLOCK[30], cityMapLen/2);
-    hideSprites(); 
+    
+    
     waitForVBlank();
     DMANow(3, shadowOAM, OAM, 512);
     hOff = 0;

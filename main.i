@@ -206,6 +206,7 @@ typedef struct {
     int height;
     int hitsTaken;
     int active;
+    int num;
 } ENEMY;
 
 typedef struct {
@@ -228,7 +229,7 @@ typedef struct {
     int active;
     int powerupType;
 }POWERUP;
-# 57 "game.h"
+# 58 "game.h"
 extern int vOff;
 extern int hOff;
 extern OBJ_ATTR shadowOAM[128];
@@ -240,6 +241,11 @@ extern int fast;
 extern int slow;
 extern int box;
 extern int attack;
+extern int activeEnemies;
+extern int activePowerups;
+extern int boxesCollected;
+extern int pillSpeed;
+extern int collided;
 
 
 void initGame();
@@ -254,17 +260,17 @@ void drawDoctor();
 void initEnemy();
 void spawnEnemy();
 void updateEnemy(ENEMY *);
-void drawEnemy(ENEMY *);
+void drawEnemy();
 
 void initPill();
 void firePill();
 void updatePill(PILL *);
-void drawPill(PILL *);
+void drawPill();
 
 void initPowerup();
-void spawnPowerup(POWERUP *);
+void spawnPowerup();
 void updatePowerup(POWERUP *);
-void drawPowerup(POWERUP *);
+void drawPowerup();
 # 10 "main.c" 2
 # 1 "sound.h" 1
 SOUND soundA;
@@ -452,7 +458,8 @@ void goToGame() {
 
     DMANow(3, cityTiles, &((charblock *)0x6000000)[1], 448/2);
     DMANow(3, cityMap, &((screenblock *)0x6000000)[30], 4096/2);
-    hideSprites();
+
+
     waitForVBlank();
     DMANow(3, shadowOAM, ((OBJ_ATTR*)(0x7000000)), 512);
     hOff = 0;
