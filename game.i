@@ -960,6 +960,18 @@ typedef struct {
     int active;
 }PILL;
 
+typedef struct {
+    int row;
+    int col;
+    int worldCol;
+    int worldRow;
+    int cdel;
+    int rdel;
+    int width;
+    int height;
+    int active;
+    int confettiType;
+}CONFETTI;
 
 typedef struct {
     int row;
@@ -988,7 +1000,7 @@ typedef struct {
     int width;
     int height;
 }BOXCOUNTER;
-# 79 "game.h"
+# 92 "game.h"
 extern int vOff;
 extern int hOff;
 extern OBJ_ATTR shadowOAM[128];
@@ -1008,9 +1020,10 @@ extern int collided;
 extern ENEMY enemies[10];
 extern DOCSPRITE doctor;
 extern int livesRemaining;
-extern BOX boxes[5];
+extern BOX boxes[3];
 extern BOXCOUNTER boxbar;
-
+extern CONFETTI confetti[3];
+extern int frameCounter2;
 
 
 void initGame();
@@ -1043,7 +1056,13 @@ void initBox();
 void updateBox();
 void drawBox();
 
+void initWin();
 void updateWin();
+void drawWin();
+void initConfetti();
+void fireConfetti();
+void updateConfetti(CONFETTI *);
+void drawConfetti();
 # 4 "game.c" 2
 # 1 "sky.h" 1
 # 22 "sky.h"
@@ -1100,19 +1119,25 @@ void stopSound();
 
 extern const signed char bubblePop[2117];
 # 10 "game.c" 2
+
+
 OBJ_ATTR shadowOAM[128];
 DOCSPRITE doctor;
 POWERUP powerups[5];
+CONFETTI confetti[3];
 ENEMY enemies[10];
 PILL pills[5];
-BOX boxes[5];
+BOX boxes[3];
 BOXCOUNTER boxbar;
-int num;
-int bubbles;
+
+
 enum {SPRITERIGHT,SPRITELEFT, SPRITESHIELDRIGHT,SPRITESHIELDLEFT,SPRITEIDLE};
 enum {STANDARDMODE, WHITEMODE, BLACKMODE};
+
+
 int collided;
 int frameCounter;
+int frameCounter2;
 int enemiesRemaining;
 int cheat = 0;
 int randPowerup;
@@ -1123,6 +1148,9 @@ int boxesCollected;
 int pillSpeed;
 int blend;
 int livesRemaining;
+int num;
+int bubbles;
+
 
 void initGame() {
  DMANow(3, skyPal, ((unsigned short *)0x5000000), 512/2);
@@ -1145,9 +1173,8 @@ void initGame() {
  pillSpeed = 2;
  collided = 0;
  blend = 0;
- livesRemaining = 1;
+ livesRemaining = 5;
  prevBox = 0;
-
  initDoctor();
  initEnemy();
  initPill();
@@ -1160,7 +1187,6 @@ void updateGame(){
  updateBkgd();
  updateDoctor();
  updateBox();
- updateWin();
  for (int i = 0; i < 5; i++){
   updatePill(&pills[i]);
  }
@@ -1195,16 +1221,7 @@ void updateBkgd(){
         (*(volatile unsigned short *)0x04000014) = hOff/2;
     }
 }
-void updateWin(){
- if (boxesCollected == 3){
-  shadowOAM[67].attr0 = 100| (0<<13) | (0<<14);
-  shadowOAM[67].attr1 = 100 | (2<<14);
-  shadowOAM[67].attr2 = ((0)*32+(20));
-  for (int i = 0; i < 5; i++){
-   boxes[i].active = 0;
-  }
- }
-}
+
 void initBar(){
  boxbar.row = 0;
  boxbar.col = 0;
@@ -1215,23 +1232,27 @@ void drawBar(){
  shadowOAM[60].attr1 = boxbar.col | (2<<14);
  shadowOAM[60].attr2 = ((0)*32+(20));
 }
+
 void initBox(){
- for (int i = 0; i < 5; i++){
+ for (int i = 0; i < 3; i++){
   boxes[i].height = 8;
   boxes[i].width = 8;
+  boxes[i].active = 0;
+  boxes[i].row = boxbar.row;
  }
 }
 void updateBox(){
  if (boxesCollected > prevBox){
+
   boxes[prevBox].active = 1;
   int prev = prevBox - 1;
   boxes[prevBox].col = boxes[prev].col + boxes[prev].width + 8;
  }
-  boxes[prevBox].row = boxbar.row;
+
   prevBox = boxesCollected;
 }
 void drawBox(){
- for (int i = 0; i < 5; i++){
+ for (int i = 0; i < 3; i++){
   if (boxes[i].active){
    shadowOAM[61 + i].attr0 = (0xFF & boxes[i].row) | (0<<13) | (0<<14);
    shadowOAM[61 + i].attr1 = (0x1FF & boxes[i].col) | (2<<14);
@@ -1241,6 +1262,7 @@ void drawBox(){
   }
  }
 }
+
 void initDoctor(){
  doctor.height = 32;
  doctor.width = 32;
@@ -1276,7 +1298,7 @@ void updateDoctor(){
    doctor.aniState = SPRITERIGHT;
   }
 
-  if (boxesCollected >= 5){
+  if (boxesCollected >= 3){
    doctor.col += doctor.cdel;
   }
   else if (doctor.col + doctor.width < 256 && collisionmapBitmap[((doctor.row)*(256)+(doctor.col + doctor.width + doctor.cdel - 1))]
@@ -1289,7 +1311,6 @@ void updateDoctor(){
   } else{
    doctor.aniState = SPRITELEFT;
   }
-
   if (doctor.col > 0 && collisionmapBitmap[((doctor.row)*(256)+(doctor.col - doctor.cdel))]
                                  && collisionmapBitmap[((doctor.row + doctor.height - 1)*(256)+(doctor.col - doctor.cdel))]) {
    hOff--;
@@ -1303,12 +1324,12 @@ void updateDoctor(){
             doctor.aniCounter += 1;
     }
 
+
  if ((!(~(oldButtons)&((1<<0))) && (~buttons & ((1<<0)))) && doctor.pillTimer >= 16 && collided != 1){
   firePill();
   playSoundB(bubblePop, 2117, 0);
   doctor.pillTimer = 0;
  }
-
 
 
  doctor.pillTimer+= pillSpeed;
@@ -1320,6 +1341,7 @@ void drawDoctor(){
  shadowOAM[0].attr1 = doctor.col | (2<<14);
  shadowOAM[0].attr2 = ((doctor.aniState * 4)*32+(doctor.curFrame * 4));
 }
+
 void initPowerup(){
  for (int i = 0; i < 5; i++){
   powerups[i].row = -1;
@@ -1333,6 +1355,7 @@ void initPowerup(){
  }
 }
 void spawnPowerup(){
+
  int randColIndex = rand() % 220;
  if (randColIndex == 240){
   randColIndex = 200;
@@ -1340,14 +1363,16 @@ void spawnPowerup(){
   randColIndex = 0 + 20;
  }
 
+
  int randPow = (rand() % 5);
+
  if (randPow % 2 == 0){
   randPow = 0;
  }
  if (frameCounter % 50 == 0){
   for (int i = 0; i < 5; i++){
 
-   if (powerups[i].active == 0 && activePowerups < 3 && boxesCollected < 5){
+   if (powerups[i].active == 0 && activePowerups < 3){
     powerups[i].worldCol = randColIndex;
     powerups[i].worldRow = 10;
     powerups[i].active = 1;
@@ -1399,7 +1424,6 @@ void drawPowerup(){
  for (int i = 0; i < 5; i++){
   if (powerups[i].active == 1){
    if (powerups[i].powerupType == 0){
-    c = 0;
     r = 16;
    } else if (powerups[i].powerupType == 1){
     c = 0;
@@ -1422,6 +1446,7 @@ void drawPowerup(){
   }
  }
 }
+
 void initPill(){
  for (int i = 0; i < 5; i++){
   pills[i].height = 8;
@@ -1437,9 +1462,11 @@ void firePill(){
  for (int i = 0; i < 5; i++){
   if (!pills[i].active){
    pills[i].row = 160 - 35;
+
    if (doctor.aniState == SPRITERIGHT || doctor.aniState == SPRITESHIELDRIGHT){
     pills[i].col = doctor.col+6;
     pills[i].cdel = 2;
+
    } else if (doctor.aniState == SPRITELEFT || doctor.aniState == SPRITESHIELDLEFT){
     pills[i].col = doctor.col - 18;
     pills[i].cdel = -2;
@@ -1479,6 +1506,7 @@ void drawPill(){
   }
  }
 }
+
 void initEnemy(){
 
  for (int i = 0; i < 10; i++){
@@ -1528,17 +1556,15 @@ void updateEnemy(ENEMY * e){
    activeEnemies -= 1;
   }
 
+  if (collision(e->col, e->row, e->width, e->height, doctor.col, doctor.row, doctor.width, doctor.height)){
+   collided = 1;
+   blend = (rand() % 10) + 2;
+  } else {
+   collided = 0;
+   blend = 0;
+   livesRemaining--;
+  }
   for (int i = 0; i < 5; i++){
-
-   if (collision(e->col, e->row, e->width, e->height, doctor.col, doctor.row, doctor.width, doctor.height)){
-    collided = 1;
-    blend = (rand() % 10) + 2;
-    livesRemaining--;
-   } else {
-    collided = 0;
-    blend = 0;
-
-   }
 
    if (pills[i].active && collision(e->col, e->row, e->width, e->height,
    pills[i].col, pills[i].row, pills[i].width, pills[i].height) && collided != 1){
@@ -1546,7 +1572,7 @@ void updateEnemy(ENEMY * e){
 
     pills[i].active = 0;
     activeEnemies -= 1;
-# 474 "game.c"
+# 481 "game.c"
    }
    if (cheat == 1 && collision(e->col, e->row, e->width, e->height,
           doctor.col, doctor.row, doctor.width, doctor.height)){
@@ -1595,5 +1621,82 @@ void drawEnemy(){
    shadowOAM[10 + i].attr0 = (2<<8);
   }
  }
-# 530 "game.c"
+}
+
+
+void initWin(){
+ frameCounter2 = 0;
+ initConfetti();
+}
+void updateWin(){
+ frameCounter2++;
+ for (int i = 0; i < 3; i++){
+  fireConfetti();
+  updateConfetti(&confetti[i]);
+ }
+}
+void drawWin(){
+ drawConfetti();
+}
+void initConfetti(){
+ for (int i = 0; i < 3; i++){
+  confetti[i].row = 0;
+  confetti[i].col = 0;
+  confetti[i].cdel = 1;
+  confetti[i].rdel = 4;
+  confetti[i].width = 16;
+  confetti[i].height = 16;
+  confetti[i].active = 1;
+ }
+}
+void fireConfetti(){
+ int randColIndex = rand() % 220;
+ if (randColIndex == 240){
+  randColIndex = 200;
+ } else if (randColIndex == 0){
+  randColIndex = 0 + 20;
+ }
+ int randPow = (rand() % 3);
+
+ if (frameCounter2 % 1 == 0){
+  for (int i = 0; i < 3; i++){
+   if (confetti[i].active == 0){
+    confetti[i].worldCol = randColIndex;
+    confetti[i].worldRow = 10;
+    confetti[i].active = 1;
+    confetti[i].confettiType = randPow;
+   }
+   break;
+  }
+ }
+}
+void updateConfetti(CONFETTI * c){
+ if (c->active){
+  c->worldRow += c->rdel;
+  if (c->worldRow >= 160){
+   c->active = 0;
+  }
+ }
+ c->col= c->worldCol - hOff;
+ c->row = c->worldRow;
+}
+void drawConfetti(){
+ int r = 4;
+ int c = 0;
+ for (int i = 0; i < 3; i++){
+  if (confetti[i].active == 1){
+   if (confetti[i].confettiType == 0){
+    c = 16;
+   } else if (confetti[i].confettiType == 1){
+    c = 20;
+   } else if (confetti[i].confettiType == 2){
+    c = 24;
+   }
+   shadowOAM[40 + i].attr0 = (0xFF & confetti[i].row) | (0<<13) | (0<<14) | (1<<10);
+   shadowOAM[40 + i].attr1 = (0x1FF & confetti[i].col) | (2<<14);
+   shadowOAM[40 + i].attr2 = ((r)*32+(c));
+  } else {
+   shadowOAM[40 + i].attr0 = (2<<8);
+  }
+ }
 }

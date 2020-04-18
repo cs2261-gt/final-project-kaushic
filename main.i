@@ -229,6 +229,19 @@ typedef struct {
     int width;
     int height;
     int active;
+    int confettiType;
+}CONFETTI;
+
+typedef struct {
+    int row;
+    int col;
+    int worldCol;
+    int worldRow;
+    int cdel;
+    int rdel;
+    int width;
+    int height;
+    int active;
     int powerupType;
 }POWERUP;
 
@@ -246,7 +259,7 @@ typedef struct {
     int width;
     int height;
 }BOXCOUNTER;
-# 77 "game.h"
+# 92 "game.h"
 extern int vOff;
 extern int hOff;
 extern OBJ_ATTR shadowOAM[128];
@@ -266,8 +279,10 @@ extern int collided;
 extern ENEMY enemies[10];
 extern DOCSPRITE doctor;
 extern int livesRemaining;
-extern BOX boxes[5];
+extern BOX boxes[3];
 extern BOXCOUNTER boxbar;
+extern CONFETTI confetti[3];
+extern int frameCounter2;
 
 
 void initGame();
@@ -299,6 +314,14 @@ void drawBar();
 void initBox();
 void updateBox();
 void drawBox();
+
+void initWin();
+void updateWin();
+void drawWin();
+void initConfetti();
+void fireConfetti();
+void updateConfetti(CONFETTI *);
+void drawConfetti();
 # 10 "main.c" 2
 # 1 "sound.h" 1
 SOUND soundA;
@@ -505,11 +528,12 @@ void game() {
     if ((!(~(oldButtons)&((1<<3))) && (~buttons & ((1<<3))))){
         pauseSound();
         goToPause();
-    } else if (boxesCollected == 5){
+    } else if (boxesCollected == 1){
         stopSound();
 
         playSoundA(winSong, 38896, 0);
         goToWin();
+        initWin();
     } else if (livesRemaining == 0){
         stopSound();
 
@@ -532,6 +556,9 @@ void goToPause(){
     state = PAUSE;
 }
 void pause(){
+    waitForVBlank();
+
+    DMANow(3,shadowOAM, ((OBJ_ATTR*)(0x7000000)), 512);
     if((!(~(oldButtons)&((1<<2))) && (~buttons & ((1<<2))))){
         pauseSound();
         goToStart();
@@ -554,6 +581,10 @@ void goToWin(){
     state = WIN;
 }
 void win(){
+    updateWin();
+    drawWin();
+    waitForVBlank();
+    DMANow(3,shadowOAM, ((OBJ_ATTR*)(0x7000000)), 512);
     if((!(~(oldButtons)&((1<<3))) && (~buttons & ((1<<3))))){
         goToStart();
     }

@@ -166,11 +166,12 @@ void game() {
     if (BUTTON_PRESSED(BUTTON_START)){
         pauseSound();
         goToPause();
-    } else if (boxesCollected == 1){
+    } else if (boxesCollected == 3){
         stopSound();
         //play win music
         playSoundA(winSong, WINSONGLEN, 0);
         goToWin();
+        initWin();
     } else if (livesRemaining == 0){
         stopSound();
         //play lose music
@@ -193,6 +194,9 @@ void goToPause(){
     state = PAUSE;
 }
 void pause(){
+    waitForVBlank();
+
+    DMANow(3,shadowOAM, OAM, 512);
     if(BUTTON_PRESSED(BUTTON_SELECT)){
         pauseSound();
         goToStart();
@@ -215,6 +219,10 @@ void goToWin(){
     state = WIN;
 }
 void win(){
+    updateWin();
+    drawWin();
+    waitForVBlank();
+    DMANow(3,shadowOAM, OAM, 512);
     if(BUTTON_PRESSED(BUTTON_START)){
         goToStart();
     } 
@@ -237,3 +245,5 @@ void lose(){
         goToStart();
     }
 }
+
+

@@ -36,6 +36,18 @@ typedef struct {
     int active;
 }PILL;
 
+typedef struct {
+    int row;
+    int col;
+    int worldCol;
+    int worldRow;
+    int cdel;
+    int rdel;
+    int width;
+    int height;
+    int active;
+    int confettiType;
+}CONFETTI;
 
 typedef struct {
     int row;
@@ -72,7 +84,8 @@ typedef struct {
 #define MAPHEIGHT 256
 #define MAPWIDTH 256
 #define LIFECOUNT 5
-#define BOXCOUNT 5
+#define BOXCOUNT 3
+#define CONFETTICOUNT 3
 
 
 // Variables
@@ -97,7 +110,8 @@ extern DOCSPRITE doctor;
 extern int livesRemaining;
 extern BOX boxes[BOXCOUNT];
 extern BOXCOUNTER boxbar;
-
+extern CONFETTI confetti[CONFETTICOUNT];
+extern int frameCounter2;
 
 //Prototypes
 void initGame();
@@ -129,5 +143,11 @@ void drawBar();
 void initBox();
 void updateBox();
 void drawBox();
-
+//win sequence
+void initWin();
 void updateWin();
+void drawWin();
+void initConfetti();
+void fireConfetti();
+void updateConfetti(CONFETTI *);
+void drawConfetti();
