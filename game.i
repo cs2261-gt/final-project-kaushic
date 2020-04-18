@@ -1176,7 +1176,7 @@ void initGame() {
  pillSpeed = 2;
  collided = 0;
  blend = 0;
- livesRemaining = 5;
+ livesRemaining = 1;
  prevBox = 0;
  initDoctor();
  initEnemy();

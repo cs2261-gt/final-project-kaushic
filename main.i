@@ -152,7 +152,7 @@ extern const unsigned short pausedPal[256];
 # 6 "main.c" 2
 # 1 "instructions.h" 1
 # 22 "instructions.h"
-extern const unsigned short instructionsTiles[4480];
+extern const unsigned short instructionsTiles[4400];
 
 
 extern const unsigned short instructionsMap[1024];
@@ -484,9 +484,9 @@ void start() {
 void goToInstructions() {
     (*(volatile unsigned short *)0x04000010) = 0;
     (*(volatile unsigned short *)0x04000014) = 0;
- DMANow(3, instructionsTiles, &((charblock *)0x6000000)[0], 8960/2);
+ DMANow(3, instructionsTiles, &((charblock *)0x6000000)[0], 8800/2);
     DMANow(3, instructionsMap, &((screenblock *)0x6000000)[28], 2048/2);
-    DMANow(3, instructionsTiles, &((charblock *)0x6000000)[1], 8960/2);
+    DMANow(3, instructionsTiles, &((charblock *)0x6000000)[1], 8800/2);
     DMANow(3, instructionsMap, &((screenblock *)0x6000000)[30], 2048/2);
     DMANow(3, instructionsPal, ((unsigned short *)0x5000000), 256);
     hideSprites();

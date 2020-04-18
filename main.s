@@ -169,64 +169,66 @@ goToInstructions:
 	@ Function supports interworking.
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
-	mov	r3, #67108864
-	mov	r2, #0
-	push	{r4, r5, r6, lr}
-	ldr	r6, .L16
-	ldr	r5, .L16+4
-	ldr	r4, .L16+8
-	strh	r2, [r3, #16]	@ movhi
-	mov	r1, r6
-	strh	r2, [r3, #20]	@ movhi
+	mov	r2, #67108864
+	mov	r1, #0
+	push	{r4, r5, r6, r7, r8, lr}
+	ldr	r7, .L16
+	ldr	r6, .L16+4
+	ldr	r5, .L16+8
+	ldr	r4, .L16+12
+	strh	r1, [r2, #16]	@ movhi
+	mov	r3, r7
+	strh	r1, [r2, #20]	@ movhi
 	mov	r0, #3
-	mov	r3, #4480
+	mov	r1, r6
 	mov	r2, #100663296
 	mov	lr, pc
 	bx	r4
 	mov	r1, r5
 	mov	r3, #1024
 	mov	r0, #3
-	ldr	r2, .L16+12
+	ldr	r2, .L16+16
 	mov	lr, pc
 	bx	r4
+	mov	r3, r7
 	mov	r1, r6
-	mov	r3, #4480
 	mov	r0, #3
-	ldr	r2, .L16+16
+	ldr	r2, .L16+20
 	mov	lr, pc
 	bx	r4
 	mov	r1, r5
 	mov	r3, #1024
 	mov	r0, #3
-	ldr	r2, .L16+20
+	ldr	r2, .L16+24
 	mov	lr, pc
 	bx	r4
 	mov	r2, #83886080
 	mov	r0, #3
-	ldr	r1, .L16+24
+	ldr	r1, .L16+28
 	mov	r3, #256
 	mov	lr, pc
 	bx	r4
-	ldr	r3, .L16+28
+	ldr	r3, .L16+32
 	mov	lr, pc
 	bx	r3
-	ldr	r3, .L16+32
+	ldr	r3, .L16+36
 	mov	lr, pc
 	bx	r3
 	mov	r3, #512
 	mov	r2, #117440512
 	mov	r0, #3
-	ldr	r1, .L16+36
+	ldr	r1, .L16+40
 	mov	lr, pc
 	bx	r4
 	mov	r2, #5
-	ldr	r3, .L16+40
-	pop	{r4, r5, r6, lr}
+	ldr	r3, .L16+44
+	pop	{r4, r5, r6, r7, r8, lr}
 	str	r2, [r3]
 	bx	lr
 .L17:
 	.align	2
 .L16:
+	.word	4400
 	.word	instructionsTiles
 	.word	instructionsMap
 	.word	DMANow

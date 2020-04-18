@@ -233,7 +233,12 @@ initGame:
 	mov	lr, pc
 	bx	r4
 	mov	ip, #0
+	mov	r5, #1
 	mov	r6, #32
+	mov	r7, #129
+	mov	fp, #104
+	mov	r10, #3
+	mov	r9, #16
 	ldr	r0, .L40+52
 	str	ip, [r0]
 	ldr	r0, .L40+56
@@ -247,53 +252,47 @@ initGame:
 	ldr	r0, .L40+72
 	str	ip, [r0]
 	ldr	r0, .L40+76
-	mov	r8, #20
 	str	ip, [r0]
 	ldr	r0, .L40+80
-	mov	r2, r6
-	str	r6, [r0, #20]
-	str	r6, [r0, #16]
-	mvn	r6, #0
-	mov	r5, #1
-	mov	r7, #129
-	mov	fp, #104
-	mov	r10, #3
-	mov	r9, #16
+	mov	r8, #20
+	str	r5, [r0]
+	ldr	r0, .L40+84
+	str	r7, [r0]
+	str	r5, [r0, #8]
+	str	r5, [r0, #12]
 	str	ip, [r0, #24]
 	str	ip, [r0, #36]
 	str	ip, [r0, #28]
-	mov	r1, ip
-	ldr	ip, .L40+84
-	str	r8, [ip]
-	ldr	ip, .L40+88
-	str	r6, [ip]
-	mov	r6, #2
-	str	r5, [r0, #8]
-	str	r5, [r0, #12]
-	str	r7, [r0]
 	str	fp, [r0, #4]
 	str	r10, [r0, #40]
 	str	r9, [r0, #44]
-	mov	r0, #5
+	str	r6, [r0, #20]
+	str	r6, [r0, #16]
+	mvn	r0, #0
+	mov	r2, ip
+	ldr	ip, .L40+88
+	str	r8, [ip]
 	ldr	ip, .L40+92
-	str	r6, [ip]
-	ldr	ip, .L40+96
-	mov	r3, r5
 	str	r0, [ip]
+	mov	ip, #2
+	ldr	r0, .L40+96
+	mov	r1, r5
+	str	ip, [r0]
 	mov	r5, #144	@ movhi
 	mov	ip, #67108864
 	mov	r4, r7
+	mov	r3, r6
 	mvn	lr, #239
 	ldr	r0, .L40+100
 	strh	r5, [ip, #80]	@ movhi
 	add	ip, r0, #360
 .L33:
-	str	r3, [r0, #8]
-	str	r3, [r0, #12]
-	str	r2, [r0, #16]
-	str	r2, [r0, #20]
-	str	r1, [r0, #24]
-	str	r1, [r0, #28]
+	str	r1, [r0, #8]
+	str	r1, [r0, #12]
+	str	r3, [r0, #16]
+	str	r3, [r0, #20]
+	str	r2, [r0, #24]
+	str	r2, [r0, #28]
 	stm	r0, {r4, lr}
 	add	r0, r0, #36
 	cmp	r0, ip
@@ -377,11 +376,11 @@ initGame:
 	.word	collided
 	.word	blend
 	.word	prevBox
+	.word	livesRemaining
 	.word	doctor
 	.word	enemiesRemaining
 	.word	num
 	.word	pillSpeed
-	.word	livesRemaining
 	.word	enemies
 	.word	pills
 	.word	powerups
