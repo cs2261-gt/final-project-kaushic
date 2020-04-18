@@ -42,6 +42,7 @@ unsigned short oldButtons;
 
 // Horizontal Offset
 int hOff;
+int hOff2;
 int vOff;
 //Sounds
 SOUND soundA;
@@ -119,13 +120,11 @@ void start() {
 void goToInstructions() {
     REG_BG0HOFF = 0;
     REG_BG1HOFF = 0;
-	DMANow(3, skyPal, PALETTE, skyPalLen/2);
-    //parallax background
-    DMANow(3, skyTiles, &CHARBLOCK[0], skyTilesLen/2);
-    DMANow(3, skyMap, &SCREENBLOCK[28], skyMapLen/2);
-    
-    DMANow(3, cityTiles, &CHARBLOCK[1], cityTilesLen/2);
-    DMANow(3, cityMap, &SCREENBLOCK[30], cityMapLen/2);
+	DMANow(3, instructionsTiles, &CHARBLOCK[0], instructionsTilesLen/2);
+    DMANow(3, instructionsMap, &SCREENBLOCK[28], instructionsMapLen/2);
+    DMANow(3, instructionsTiles, &CHARBLOCK[1], instructionsTilesLen/2);
+    DMANow(3, instructionsMap, &SCREENBLOCK[30], instructionsMapLen/2);
+    DMANow(3, instructionsPal, PALETTE, 256);
     hideSprites(); 
     waitForVBlank();
     DMANow(3, shadowOAM, OAM, 512);

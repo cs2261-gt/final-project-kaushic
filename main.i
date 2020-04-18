@@ -152,7 +152,7 @@ extern const unsigned short pausedPal[256];
 # 6 "main.c" 2
 # 1 "instructions.h" 1
 # 22 "instructions.h"
-extern const unsigned short instructionsTiles[32];
+extern const unsigned short instructionsTiles[4480];
 
 
 extern const unsigned short instructionsMap[1024];
@@ -259,9 +259,10 @@ typedef struct {
     int width;
     int height;
 }BOXCOUNTER;
-# 92 "game.h"
+# 94 "game.h"
 extern int vOff;
 extern int hOff;
+extern int hOff2;
 extern OBJ_ATTR shadowOAM[128];
 extern int frameCounter;
 extern PILL pills[5];
@@ -283,6 +284,7 @@ extern BOX boxes[3];
 extern BOXCOUNTER boxbar;
 extern CONFETTI confetti[3];
 extern int frameCounter2;
+
 
 
 void initGame();
@@ -404,6 +406,7 @@ unsigned short oldButtons;
 
 
 int hOff;
+int hOff2;
 int vOff;
 
 SOUND soundA;
@@ -481,13 +484,11 @@ void start() {
 void goToInstructions() {
     (*(volatile unsigned short *)0x04000010) = 0;
     (*(volatile unsigned short *)0x04000014) = 0;
- DMANow(3, skyPal, ((unsigned short *)0x5000000), 512/2);
-
-    DMANow(3, skyTiles, &((charblock *)0x6000000)[0], 3712/2);
-    DMANow(3, skyMap, &((screenblock *)0x6000000)[28], 2048/2);
-
-    DMANow(3, cityTiles, &((charblock *)0x6000000)[1], 448/2);
-    DMANow(3, cityMap, &((screenblock *)0x6000000)[30], 4096/2);
+ DMANow(3, instructionsTiles, &((charblock *)0x6000000)[0], 8960/2);
+    DMANow(3, instructionsMap, &((screenblock *)0x6000000)[28], 2048/2);
+    DMANow(3, instructionsTiles, &((charblock *)0x6000000)[1], 8960/2);
+    DMANow(3, instructionsMap, &((screenblock *)0x6000000)[30], 2048/2);
+    DMANow(3, instructionsPal, ((unsigned short *)0x5000000), 256);
     hideSprites();
     waitForVBlank();
     DMANow(3, shadowOAM, ((OBJ_ATTR*)(0x7000000)), 512);
@@ -528,7 +529,7 @@ void game() {
     if ((!(~(oldButtons)&((1<<3))) && (~buttons & ((1<<3))))){
         pauseSound();
         goToPause();
-    } else if (boxesCollected == 1){
+    } else if (boxesCollected == 3){
         stopSound();
 
         playSoundA(winSong, 38896, 0);

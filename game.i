@@ -1000,9 +1000,10 @@ typedef struct {
     int width;
     int height;
 }BOXCOUNTER;
-# 92 "game.h"
+# 94 "game.h"
 extern int vOff;
 extern int hOff;
+extern int hOff2;
 extern OBJ_ATTR shadowOAM[128];
 extern int frameCounter;
 extern PILL pills[5];
@@ -1024,6 +1025,7 @@ extern BOX boxes[3];
 extern BOXCOUNTER boxbar;
 extern CONFETTI confetti[3];
 extern int frameCounter2;
+
 
 
 void initGame();
@@ -1138,6 +1140,7 @@ enum {STANDARDMODE, WHITEMODE, BLACKMODE};
 int collided;
 int frameCounter;
 int frameCounter2;
+int frameCounter3;
 int enemiesRemaining;
 int cheat = 0;
 int randPowerup;
@@ -1572,7 +1575,7 @@ void updateEnemy(ENEMY * e){
 
     pills[i].active = 0;
     activeEnemies -= 1;
-# 481 "game.c"
+# 482 "game.c"
    }
    if (cheat == 1 && collision(e->col, e->row, e->width, e->height,
           doctor.col, doctor.row, doctor.width, doctor.height)){

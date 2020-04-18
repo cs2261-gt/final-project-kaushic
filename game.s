@@ -2037,6 +2037,7 @@ drawWin:
 	.comm	randPowerup,4,4
 	.global	cheat
 	.comm	enemiesRemaining,4,4
+	.comm	frameCounter3,4,4
 	.comm	frameCounter2,4,4
 	.comm	frameCounter,4,4
 	.comm	collided,4,4

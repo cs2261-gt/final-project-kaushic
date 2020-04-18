@@ -26,6 +26,7 @@ enum {STANDARDMODE, WHITEMODE, BLACKMODE};
 int collided; //doctor and enemy collision
 int frameCounter;
 int frameCounter2;
+int frameCounter3;
 int enemiesRemaining;
 int cheat = 0;
 int randPowerup; //to pick a rand powerup
@@ -528,7 +529,7 @@ void drawEnemy(){
 	}
 }
 
-//win screen//
+/* confetti screen */
 void initWin(){
 	frameCounter2 = 0;
 	initConfetti();

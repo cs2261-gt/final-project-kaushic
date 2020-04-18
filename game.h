@@ -77,6 +77,8 @@ typedef struct {
     int height;
 }BOXCOUNTER;
 
+
+
 //Constants
 #define PILLCOUNT 5
 #define ENEMYCOUNT 10
@@ -91,6 +93,7 @@ typedef struct {
 // Variables
 extern int vOff;
 extern int hOff;
+extern int hOff2;
 extern OBJ_ATTR shadowOAM[128];
 extern int frameCounter;
 extern PILL pills[PILLCOUNT];
@@ -112,6 +115,7 @@ extern BOX boxes[BOXCOUNT];
 extern BOXCOUNTER boxbar;
 extern CONFETTI confetti[CONFETTICOUNT];
 extern int frameCounter2;
+
 
 //Prototypes
 void initGame();
