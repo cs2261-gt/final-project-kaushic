@@ -936,7 +936,7 @@ typedef struct {
     int numFrames;
     int pillTimer;
     int screenCol;
-} DOCSPRITE;
+}DOCSPRITE;
 
 typedef struct {
     int row;
@@ -948,7 +948,7 @@ typedef struct {
     int hitsTaken;
     int active;
     int num;
-} ENEMY;
+}ENEMY;
 
 typedef struct {
     int row;
@@ -960,9 +960,12 @@ typedef struct {
     int active;
 }PILL;
 
+
 typedef struct {
     int row;
     int col;
+    int worldCol;
+    int worldRow;
     int cdel;
     int rdel;
     int width;
@@ -970,7 +973,22 @@ typedef struct {
     int active;
     int powerupType;
 }POWERUP;
-# 58 "game.h"
+
+typedef struct {
+    int row;
+    int col;
+    int width;
+    int height;
+    int active;
+}BOX;
+
+typedef struct {
+    int row;
+    int col;
+    int width;
+    int height;
+}BOXCOUNTER;
+# 79 "game.h"
 extern int vOff;
 extern int hOff;
 extern OBJ_ATTR shadowOAM[128];
@@ -987,6 +1005,12 @@ extern int activePowerups;
 extern int boxesCollected;
 extern int pillSpeed;
 extern int collided;
+extern ENEMY enemies[10];
+extern DOCSPRITE doctor;
+extern int livesRemaining;
+extern BOX boxes[5];
+extern BOXCOUNTER boxbar;
+
 
 
 void initGame();
@@ -1012,6 +1036,14 @@ void initPowerup();
 void spawnPowerup();
 void updatePowerup(POWERUP *);
 void drawPowerup();
+
+void initBar();
+void drawBar();
+void initBox();
+void updateBox();
+void drawBox();
+
+void updateWin();
 # 4 "game.c" 2
 # 1 "sky.h" 1
 # 22 "sky.h"
@@ -1071,8 +1103,10 @@ extern const signed char bubblePop[2117];
 OBJ_ATTR shadowOAM[128];
 DOCSPRITE doctor;
 POWERUP powerups[5];
-ENEMY enemies[2];
+ENEMY enemies[10];
 PILL pills[5];
+BOX boxes[5];
+BOXCOUNTER boxbar;
 int num;
 int bubbles;
 enum {SPRITERIGHT,SPRITELEFT, SPRITESHIELDRIGHT,SPRITESHIELDLEFT,SPRITEIDLE};
@@ -1082,11 +1116,13 @@ int frameCounter;
 int enemiesRemaining;
 int cheat = 0;
 int randPowerup;
+int prevBox;
 int activeEnemies;
 int activePowerups;
 int boxesCollected;
 int pillSpeed;
 int blend;
+int livesRemaining;
 
 void initGame() {
  DMANow(3, skyPal, ((unsigned short *)0x5000000), 512/2);
@@ -1102,31 +1138,36 @@ void initGame() {
 
  hOff = 0;
  frameCounter = 0;
- enemiesRemaining = 2 * 2;
+ enemiesRemaining = 10 * 2;
  num = -1;
  boxesCollected = 0;
  bubbles = 0;
  pillSpeed = 2;
  collided = 0;
  blend = 0;
+ livesRemaining = 1;
+ prevBox = 0;
 
  initDoctor();
  initEnemy();
  initPill();
  initPowerup();
+ initBar();
+ initBox();
 }
 void updateGame(){
  frameCounter++;
  updateBkgd();
  updateDoctor();
-
-
+ updateBox();
+ updateWin();
  for (int i = 0; i < 5; i++){
   updatePill(&pills[i]);
  }
- for (int i = 0; i < 2; i++){
-  spawnEnemy();
-  updateEnemy(&enemies[i]);
+ for (int i = 0; i < 10; i++){
+   spawnEnemy();
+   updateEnemy(&enemies[i]);
+
  }
  for (int i = 0; i < 5; i++){
   spawnPowerup();
@@ -1145,12 +1186,60 @@ void drawGame(){
  drawPill();
  drawEnemy();
  drawPowerup();
+ drawBar();
+ drawBox();
 }
 void updateBkgd(){
     (*(volatile unsigned short *)0x04000010) = hOff;
     if (hOff % 2 == 0){
         (*(volatile unsigned short *)0x04000014) = hOff/2;
     }
+}
+void updateWin(){
+ if (boxesCollected == 3){
+  shadowOAM[67].attr0 = 100| (0<<13) | (0<<14);
+  shadowOAM[67].attr1 = 100 | (2<<14);
+  shadowOAM[67].attr2 = ((0)*32+(20));
+  for (int i = 0; i < 5; i++){
+   boxes[i].active = 0;
+  }
+ }
+}
+void initBar(){
+ boxbar.row = 0;
+ boxbar.col = 0;
+ boxbar.width = 32;
+}
+void drawBar(){
+ shadowOAM[60].attr0 = boxbar.row | (0<<13) | (0<<14);
+ shadowOAM[60].attr1 = boxbar.col | (2<<14);
+ shadowOAM[60].attr2 = ((0)*32+(20));
+}
+void initBox(){
+ for (int i = 0; i < 5; i++){
+  boxes[i].height = 8;
+  boxes[i].width = 8;
+ }
+}
+void updateBox(){
+ if (boxesCollected > prevBox){
+  boxes[prevBox].active = 1;
+  int prev = prevBox - 1;
+  boxes[prevBox].col = boxes[prev].col + boxes[prev].width + 8;
+ }
+  boxes[prevBox].row = boxbar.row;
+  prevBox = boxesCollected;
+}
+void drawBox(){
+ for (int i = 0; i < 5; i++){
+  if (boxes[i].active){
+   shadowOAM[61 + i].attr0 = (0xFF & boxes[i].row) | (0<<13) | (0<<14);
+   shadowOAM[61 + i].attr1 = (0x1FF & boxes[i].col) | (2<<14);
+   shadowOAM[61 + i].attr2 = ((0)*32+(16));
+  } else {
+   shadowOAM[61 + i].attr0 = (2<<8);
+  }
+ }
 }
 void initDoctor(){
  doctor.height = 32;
@@ -1187,13 +1276,11 @@ void updateDoctor(){
    doctor.aniState = SPRITERIGHT;
   }
 
-
-
-
-
-  if (doctor.col + doctor.width < 256 && collisionmapBitmap[((doctor.row)*(256)+(doctor.col + doctor.width + doctor.cdel - 1))]
-                                            && collisionmapBitmap[((doctor.row + doctor.height - 1)*(256)+(doctor.col + doctor.width + doctor.cdel - 1))])
+  if (boxesCollected >= 5){
    doctor.col += doctor.cdel;
+  }
+  else if (doctor.col + doctor.width < 256 && collisionmapBitmap[((doctor.row)*(256)+(doctor.col + doctor.width + doctor.cdel - 1))]
+                                            && collisionmapBitmap[((doctor.row + doctor.height - 1)*(256)+(doctor.col + doctor.width + doctor.cdel - 1))])
    hOff++;
   }
  if((~((*(volatile unsigned short *)0x04000130)) & ((1<<5)))){
@@ -1203,14 +1290,8 @@ void updateDoctor(){
    doctor.aniState = SPRITELEFT;
   }
 
-
-
-
-
   if (doctor.col > 0 && collisionmapBitmap[((doctor.row)*(256)+(doctor.col - doctor.cdel))]
                                  && collisionmapBitmap[((doctor.row + doctor.height - 1)*(256)+(doctor.col - doctor.cdel))]) {
-
-            doctor.col -= doctor.cdel;
    hOff--;
         }
  }
@@ -1228,7 +1309,7 @@ void updateDoctor(){
   doctor.pillTimer = 0;
  }
 
- (*(volatile unsigned short*)0x04000054) = blend;
+
 
  doctor.pillTimer+= pillSpeed;
  doctor.screenCol = doctor.col - hOff;
@@ -1265,9 +1346,10 @@ void spawnPowerup(){
  }
  if (frameCounter % 50 == 0){
   for (int i = 0; i < 5; i++){
-   if (powerups[i].active == 0 && activePowerups < 3){
-    powerups[i].col = randColIndex;
-    powerups[i].row = 10;
+
+   if (powerups[i].active == 0 && activePowerups < 3 && boxesCollected < 5){
+    powerups[i].worldCol = randColIndex;
+    powerups[i].worldRow = 10;
     powerups[i].active = 1;
     powerups[i].powerupType = randPow;
     activePowerups += 1;
@@ -1278,8 +1360,8 @@ void spawnPowerup(){
 }
 void updatePowerup(POWERUP *w){
  if (w->active){
-  w->row += w->rdel;
-  if (w->row >= 160){
+  w->worldRow += w->rdel;
+  if (w->worldRow >= 160){
    w->active = 0;
    activePowerups -= 1;
   }
@@ -1308,6 +1390,8 @@ void updatePowerup(POWERUP *w){
     }
   }
  }
+ w->col= w->worldCol - hOff;
+ w->row = w->worldRow;
 }
 void drawPowerup(){
  int r = 0;
@@ -1397,7 +1481,7 @@ void drawPill(){
 }
 void initEnemy(){
 
- for (int i = 0; i < 2; i++){
+ for (int i = 0; i < 10; i++){
   enemies[i].row = 160 - 31;
   enemies[i].col = -240;
   enemies[i].cdel = 1;
@@ -1410,16 +1494,16 @@ void initEnemy(){
 }
 
 void spawnEnemy() {
- int randNum = rand() % 50;
+ int randNum = rand() % 500;
 
- if (frameCounter % 50 == 0){
-  for (int i = 0; i < 2; i++){
 
-   if (enemies[i].active == 0 && activeEnemies < 3){
+ int randEnemy = (rand() % 5);
+ if (frameCounter % 250 == 0){
+  for (int i = 0; i < 10; i++){
+
+   if (enemies[i].active == 0 && activeEnemies < 3 && boxesCollected < 5){
     enemies[i].active = 1;
-    enemies[i].num = (rand() % 5);
-
-
+    enemies[i].num = randEnemy;
     activeEnemies += 1;
 
     if (randNum % 2 == 0){
@@ -1445,34 +1529,24 @@ void updateEnemy(ENEMY * e){
   }
 
   for (int i = 0; i < 5; i++){
+
    if (collision(e->col, e->row, e->width, e->height, doctor.col, doctor.row, doctor.width, doctor.height)){
     collided = 1;
     blend = (rand() % 10) + 2;
+    livesRemaining--;
    } else {
     collided = 0;
     blend = 0;
+
    }
+
    if (pills[i].active && collision(e->col, e->row, e->width, e->height,
    pills[i].col, pills[i].row, pills[i].width, pills[i].height) && collided != 1){
     e->active = 0;
-    e->hitsTaken += 1;
+
     pills[i].active = 0;
-
-    if ((e->num % 2 == 0)) {
-     if (e->hitsTaken == 2){
-      e->active = 0;
-      activeEnemies -= 1;
-      enemiesRemaining--;
-     }
-    }
-
-    else {
-     if (e->hitsTaken == 4){
-      e->active = 0;
-      activeEnemies -= 1;
-      enemiesRemaining--;
-     }
-    }
+    activeEnemies -= 1;
+# 474 "game.c"
    }
    if (cheat == 1 && collision(e->col, e->row, e->width, e->height,
           doctor.col, doctor.row, doctor.width, doctor.height)){
@@ -1496,7 +1570,7 @@ void updateEnemy(ENEMY * e){
 void drawEnemy(){
  int r = 0;
  int c = 0;
- for (int i = 0; i < 2; i++){
+ for (int i = 0; i < 10; i++){
   if (enemies[i].active == 1){
    if (enemies[i].num == 0){
     c = 4;
@@ -1521,5 +1595,5 @@ void drawEnemy(){
    shadowOAM[10 + i].attr0 = (2<<8);
   }
  }
-# 471 "game.c"
+# 530 "game.c"
 }

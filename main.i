@@ -132,7 +132,7 @@ extern const unsigned short cityPal[256];
 # 4 "main.c" 2
 # 1 "startScreen.h" 1
 # 22 "startScreen.h"
-extern const unsigned short startScreenTiles[1312];
+extern const unsigned short startScreenTiles[2192];
 
 
 extern const unsigned short startScreenMap[1024];
@@ -152,7 +152,7 @@ extern const unsigned short pausedPal[256];
 # 6 "main.c" 2
 # 1 "instructions.h" 1
 # 22 "instructions.h"
-extern const unsigned short instructionsTiles[3024];
+extern const unsigned short instructionsTiles[32];
 
 
 extern const unsigned short instructionsMap[1024];
@@ -195,7 +195,7 @@ typedef struct {
     int numFrames;
     int pillTimer;
     int screenCol;
-} DOCSPRITE;
+}DOCSPRITE;
 
 typedef struct {
     int row;
@@ -207,7 +207,7 @@ typedef struct {
     int hitsTaken;
     int active;
     int num;
-} ENEMY;
+}ENEMY;
 
 typedef struct {
     int row;
@@ -222,6 +222,8 @@ typedef struct {
 typedef struct {
     int row;
     int col;
+    int worldCol;
+    int worldRow;
     int cdel;
     int rdel;
     int width;
@@ -229,7 +231,22 @@ typedef struct {
     int active;
     int powerupType;
 }POWERUP;
-# 58 "game.h"
+
+typedef struct {
+    int row;
+    int col;
+    int width;
+    int height;
+    int active;
+}BOX;
+
+typedef struct {
+    int row;
+    int col;
+    int width;
+    int height;
+}BOXCOUNTER;
+# 77 "game.h"
 extern int vOff;
 extern int hOff;
 extern OBJ_ATTR shadowOAM[128];
@@ -246,6 +263,11 @@ extern int activePowerups;
 extern int boxesCollected;
 extern int pillSpeed;
 extern int collided;
+extern ENEMY enemies[10];
+extern DOCSPRITE doctor;
+extern int livesRemaining;
+extern BOX boxes[5];
+extern BOXCOUNTER boxbar;
 
 
 void initGame();
@@ -271,6 +293,12 @@ void initPowerup();
 void spawnPowerup();
 void updatePowerup(POWERUP *);
 void drawPowerup();
+
+void initBar();
+void drawBar();
+void initBox();
+void updateBox();
+void drawBox();
 # 10 "main.c" 2
 # 1 "sound.h" 1
 SOUND soundA;
@@ -353,7 +381,7 @@ unsigned short oldButtons;
 
 
 int hOff;
-
+int vOff;
 
 SOUND soundA;
 SOUND soundB;
@@ -402,9 +430,9 @@ void initialize() {
 void goToStart() {
     (*(volatile unsigned short *)0x04000010) = 0;
     (*(volatile unsigned short *)0x04000014) = 0;
-    DMANow(3, startScreenTiles, &((charblock *)0x6000000)[0], 2624/2);
+    DMANow(3, startScreenTiles, &((charblock *)0x6000000)[0], 4384/2);
     DMANow(3, startScreenMap, &((screenblock *)0x6000000)[28], 2048/2);
-    DMANow(3, startScreenTiles, &((charblock *)0x6000000)[1], 2624/2);
+    DMANow(3, startScreenTiles, &((charblock *)0x6000000)[1], 4384/2);
     DMANow(3, startScreenMap, &((screenblock *)0x6000000)[30], 2048/2);
     DMANow(3, startScreenPal, ((unsigned short *)0x5000000), 256);
     hideSprites();
@@ -430,11 +458,13 @@ void start() {
 void goToInstructions() {
     (*(volatile unsigned short *)0x04000010) = 0;
     (*(volatile unsigned short *)0x04000014) = 0;
-    DMANow(3, instructionsTiles, &((charblock *)0x6000000)[0], 6048/2);
-    DMANow(3, instructionsMap, &((screenblock *)0x6000000)[28], 2048/2);
-    DMANow(3, instructionsTiles, &((charblock *)0x6000000)[1], 6048/2);
-    DMANow(3, instructionsMap, &((screenblock *)0x6000000)[30], 2048/2);
-    DMANow(3, instructionsPal, ((unsigned short *)0x5000000), 256);
+ DMANow(3, skyPal, ((unsigned short *)0x5000000), 512/2);
+
+    DMANow(3, skyTiles, &((charblock *)0x6000000)[0], 3712/2);
+    DMANow(3, skyMap, &((screenblock *)0x6000000)[28], 2048/2);
+
+    DMANow(3, cityTiles, &((charblock *)0x6000000)[1], 448/2);
+    DMANow(3, cityMap, &((screenblock *)0x6000000)[30], 4096/2);
     hideSprites();
     waitForVBlank();
     DMANow(3, shadowOAM, ((OBJ_ATTR*)(0x7000000)), 512);
@@ -475,12 +505,12 @@ void game() {
     if ((!(~(oldButtons)&((1<<3))) && (~buttons & ((1<<3))))){
         pauseSound();
         goToPause();
-    } else if ((!(~(oldButtons)&((1<<2))) && (~buttons & ((1<<2))))){
+    } else if (boxesCollected == 5){
         stopSound();
 
         playSoundA(winSong, 38896, 0);
         goToWin();
-    } else if ((!(~(oldButtons)&((1<<6))) && (~buttons & ((1<<6))))){
+    } else if (livesRemaining == 0){
         stopSound();
 
         playSoundA(loseSong, 64298, 0);

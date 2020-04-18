@@ -12,7 +12,7 @@ typedef struct {
     int numFrames;
     int pillTimer;
     int screenCol;
-} DOCSPRITE;
+}DOCSPRITE;
 
 typedef struct {
     int row;
@@ -24,7 +24,7 @@ typedef struct {
     int hitsTaken;
     int active;
     int num;
-} ENEMY;
+}ENEMY;
 
 typedef struct {
     int row;
@@ -36,9 +36,12 @@ typedef struct {
     int active;
 }PILL;
 
+
 typedef struct {
     int row;
     int col;
+    int worldCol;
+    int worldRow;
     int cdel;
     int rdel;
     int width;
@@ -47,12 +50,30 @@ typedef struct {
     int powerupType;
 }POWERUP;
 
+typedef struct {
+    int row; 
+    int col;
+    int width;
+    int height;
+    int active;
+}BOX;
+
+typedef struct {
+    int row;
+    int col;
+    int width;
+    int height;
+}BOXCOUNTER;
+
 //Constants
 #define PILLCOUNT 5
-#define ENEMYCOUNT 2
+#define ENEMYCOUNT 10
 #define POWERUPCOUNT 5
 #define MAPHEIGHT 256
 #define MAPWIDTH 256
+#define LIFECOUNT 5
+#define BOXCOUNT 5
+
 
 // Variables
 extern int vOff;
@@ -71,6 +92,12 @@ extern int activePowerups;
 extern int boxesCollected;
 extern int pillSpeed;
 extern int collided;
+extern ENEMY enemies[ENEMYCOUNT];
+extern DOCSPRITE doctor;
+extern int livesRemaining;
+extern BOX boxes[BOXCOUNT];
+extern BOXCOUNTER boxbar;
+
 
 //Prototypes
 void initGame();
@@ -96,3 +123,11 @@ void initPowerup();
 void spawnPowerup();
 void updatePowerup(POWERUP *);
 void drawPowerup();
+//boxes
+void initBar();
+void drawBar();
+void initBox();
+void updateBox();
+void drawBox();
+
+void updateWin();
