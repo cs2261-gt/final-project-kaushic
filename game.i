@@ -1811,7 +1811,7 @@ void updateDoctor2(){
             doctor.aniCounter += 1;
     }
 
- if (doctor.worldCol == 230){
+ if (doctor.worldCol == 220){
   hitDoor = 1;
  }
  doctor.screenCol = doctor.worldCol - hOff;

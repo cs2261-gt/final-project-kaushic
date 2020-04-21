@@ -2147,7 +2147,7 @@ updateDoctor2:
 	movne	r0, #0
 	ldmib	r3, {r2, ip}
 	add	r2, r2, ip
-	cmp	r2, #230
+	cmp	r2, #220
 	str	r0, [r3, #28]
 	moveq	r0, #1
 	add	r1, r1, #1
