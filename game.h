@@ -1,6 +1,6 @@
 typedef struct {
     int row;
-    int col;
+    int worldCol;
     int cdel;
     int rdel;
     int width;
@@ -16,7 +16,7 @@ typedef struct {
 
 typedef struct {
     int row;
-    int col;
+    int worldCol;
     int cdel;
     int rdel;
     int width;
@@ -24,16 +24,18 @@ typedef struct {
     int hitsTaken;
     int active;
     int num;
+    int screenCol;
 }ENEMY;
 
 typedef struct {
     int row;
-    int col;
+    int worldCol;
     int cdel;
     int rdel;
     int width;
     int height;
     int active;
+    int screenCol;
 }PILL;
 
 typedef struct {
@@ -50,8 +52,6 @@ typedef struct {
 }CONFETTI;
 
 typedef struct {
-    int row;
-    int col;
     int worldCol;
     int worldRow;
     int cdel;
@@ -60,6 +60,8 @@ typedef struct {
     int height;
     int active;
     int powerupType;
+    int screenCol;
+    int screenRow;
 }POWERUP;
 
 typedef struct {

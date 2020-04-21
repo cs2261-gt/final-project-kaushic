@@ -28,7 +28,7 @@ int frameCounter;
 int frameCounter2;
 int frameCounter3;
 int enemiesRemaining;
-int cheat = 0;
+int cheat;
 int randPowerup; //to pick a rand powerup
 int prevBox; //which box to add to healthbar
 int activeEnemies;
@@ -58,12 +58,15 @@ void initGame() {
 	enemiesRemaining = ENEMYCOUNT * 2;
 	num = -1;
 	boxesCollected = 0;
+	activePowerups = 0;
 	bubbles = 0;
 	pillSpeed = 2;
 	collided = 0;
 	blend = 0;
 	livesRemaining = 1;
 	prevBox = 0;
+	activeEnemies = 0;
+	cheat = 0;
 	initDoctor();
 	initEnemy();
 	initPill();
@@ -157,7 +160,7 @@ void initDoctor(){
 	doctor.width = 32;
 	doctor.cdel = 1;
 	doctor.rdel = 1;
-	doctor.col = SCREENWIDTH/2 - doctor.height / 2 + hOff;
+	doctor.worldCol = SCREENWIDTH/2 - doctor.height / 2 + hOff;
 	doctor.row = SCREENHEIGHT - 31;
 	doctor.aniCounter = 0;
 	doctor.curFrame = 0;
@@ -187,12 +190,14 @@ void updateDoctor(){
 			doctor.aniState = SPRITERIGHT;	
 		}
 		//remove collision map once 3 boxes are collected
-		if (boxesCollected >= 3){
-			doctor.col += doctor.cdel;
-		}
-		else if (doctor.col + doctor.width < 256 && collisionmapBitmap[OFFSET(doctor.col + doctor.width + doctor.cdel - 1, doctor.row, MAPWIDTH)]
-                                            && collisionmapBitmap[OFFSET(doctor.col + doctor.width + doctor.cdel - 1, doctor.row + doctor.height - 1, MAPWIDTH)])
-			hOff++;
+		if (doctor.worldCol + doctor.width < 256 && collisionmapBitmap[OFFSET(doctor.worldCol + doctor.width + doctor.cdel - 1, doctor.row, MAPWIDTH)]
+                                            && collisionmapBitmap[OFFSET(doctor.worldCol + doctor.width + doctor.cdel - 1, doctor.row + doctor.height - 1, MAPWIDTH)])
+			doctor.worldCol += doctor.cdel;
+			//hOff++;
+			if (hOff < (50) && doctor.screenCol > 50) {
+                // Update background offset variable if the above is true
+                hOff++;
+            }
 		}
 	if(BUTTON_HELD(BUTTON_LEFT)){
 		if (cheat == 1){
@@ -200,9 +205,14 @@ void updateDoctor(){
 		} else{
 			doctor.aniState = SPRITELEFT;	
 		}
-		if (doctor.col > 0 && collisionmapBitmap[OFFSET(doctor.col - doctor.cdel, doctor.row, MAPWIDTH)]
-                                 && collisionmapBitmap[OFFSET(doctor.col - doctor.cdel, doctor.row + doctor.height - 1, MAPWIDTH)]) {
-			hOff--;
+		if (doctor.worldCol > 0 && collisionmapBitmap[OFFSET(doctor.worldCol - doctor.cdel, doctor.row, MAPWIDTH)]
+                                 && collisionmapBitmap[OFFSET(doctor.worldCol - doctor.cdel, doctor.row + doctor.height - 1, MAPWIDTH)]) {
+			doctor.worldCol -= doctor.cdel;
+			//hOff--;
+			if (hOff > 0 && doctor.screenCol < 50) {
+                // Update background offset variable if the above is true
+                hOff--;
+            }
         }
 	}
 
@@ -222,19 +232,19 @@ void updateDoctor(){
 	
 
 	doctor.pillTimer+= pillSpeed;
-	doctor.screenCol = doctor.col - hOff;
+	doctor.screenCol = doctor.worldCol - hOff;
 }
 void drawDoctor(){
 	REG_BLDY = blend;
 	shadowOAM[0].attr0 = doctor.row | ATTR0_4BPP | ATTR0_SQUARE;
-	shadowOAM[0].attr1 = doctor.col | ATTR1_MEDIUM;
+	shadowOAM[0].attr1 = doctor.screenCol | ATTR1_MEDIUM;
 	shadowOAM[0].attr2 = ATTR2_TILEID(doctor.curFrame *  4, doctor.aniState *  4);
 }
 /* POWERUP CODE  */
 void initPowerup(){
 	for (int i = 0; i < POWERUPCOUNT; i++){
-		powerups[i].row = -1;
-		powerups[i].col = -1;
+		powerups[i].worldRow = -1;
+		powerups[i].worldCol = -1;
 		powerups[i].cdel = 1;
 		powerups[i].rdel = 1;
 		powerups[i].width = 16;
@@ -281,12 +291,13 @@ void updatePowerup(POWERUP *w){
 		}
 		//collision logic for powerups
 		for (int i = 0; i < POWERUPCOUNT; i++){
-			if (powerups[i].active && collision(powerups[i].col, powerups[i].row, powerups[i].width, powerups[i].height, 
-				doctor.col, doctor.row, doctor.width, doctor.height)){
+			if (powerups[i].active && collision(powerups[i].screenCol, powerups[i].screenRow, powerups[i].width, powerups[i].height, 
+				doctor.screenCol, doctor.row, doctor.width, doctor.height)){
 					w->active = 0;
 					activePowerups -= 1;
 					if (powerups[i].powerupType == 0){ //health box
 						boxesCollected += 1;
+						w->active = 0;
 					}
 					if (powerups[i].powerupType == 1){ //x0.5 speed
 						pillSpeed = 1; 
@@ -304,8 +315,8 @@ void updatePowerup(POWERUP *w){
 				}
 		}
 	}
-	w->col= w->worldCol - hOff;
-	w->row = w->worldRow;
+	w->screenCol= w->worldCol - hOff;
+	w->screenRow = w->worldRow;
 }
 void drawPowerup(){
 	int r = 0;
@@ -327,8 +338,8 @@ void drawPowerup(){
 				c = 0;
 				r = 24;
 			}
-			shadowOAM[20 + i].attr0 = (ROWMASK & powerups[i].row) | ATTR0_4BPP | ATTR0_SQUARE | ATTR0_BLEND;
-			shadowOAM[20 + i].attr1 = (COLMASK & powerups[i].col) | ATTR1_MEDIUM;
+			shadowOAM[20 + i].attr0 = (ROWMASK & powerups[i].screenRow) | ATTR0_4BPP | ATTR0_SQUARE | ATTR0_BLEND;
+			shadowOAM[20 + i].attr1 = (COLMASK & powerups[i].screenCol) | ATTR1_MEDIUM;
 			shadowOAM[20 + i].attr2 = ATTR2_TILEID(c,r);
 		} else {
 			shadowOAM[20 + i].attr0 = ATTR0_HIDE;
@@ -342,7 +353,7 @@ void initPill(){
 		pills[i].width = 8;
 		pills[i].cdel = 1;
 		pills[i].rdel = 1;
-		pills[i].col = 0;
+		pills[i].worldCol = 0;
 		pills[i].row = -SCREENHEIGHT - 35;
 		pills[i].active = 0;
 	}	
@@ -353,11 +364,11 @@ void firePill(){
 			pills[i].row = SCREENHEIGHT - 35;
 			//pill shoots to the right
 			if (doctor.aniState == SPRITERIGHT || doctor.aniState == SPRITESHIELDRIGHT){
-				pills[i].col = doctor.col+6;
+				pills[i].worldCol = doctor.worldCol+6;
 				pills[i].cdel = 2;
 			//pill shoots to the left
 			} else if (doctor.aniState == SPRITELEFT || doctor.aniState == SPRITESHIELDLEFT){
-				pills[i].col = doctor.col - 18;
+				pills[i].worldCol = doctor.worldCol - 18;
 				pills[i].cdel = -2;
 			}
 			pills[i].active = 1;
@@ -368,12 +379,13 @@ void firePill(){
 }
 void updatePill(PILL *p){
 	if (p->active) {
-		p->col += p->cdel;
+		p->worldCol += p->cdel;
 		//pill has gone off screen
-		if (p->col < -30 || p->col + p->width > SCREENWIDTH - 1) { 
+		if (p->worldCol < -30 || p->worldCol + p->width > SCREENWIDTH - 1) { 
 			p->active = 0;
 		} 
 	}
+	p->screenCol = p->worldCol - hOff;
 }
 void drawPill(){
 	for (int i = 0; i < PILLCOUNT; i++){
@@ -388,7 +400,7 @@ void drawPill(){
 		}
 		if (pills[i].active){
 			shadowOAM[1 + i].attr0 = (ROWMASK & pills[i].row) | ATTR0_4BPP | ATTR0_SQUARE;
-			shadowOAM[1 + i].attr1 = (COLMASK & pills[i].col) | ATTR1_MEDIUM;
+			shadowOAM[1 + i].attr1 = (COLMASK & pills[i].screenCol) | ATTR1_MEDIUM;
 			shadowOAM[1 + i].attr2 = ATTR2_TILEID(c,r);
 		} else {
 			shadowOAM[1 + i].attr0 = ATTR0_HIDE;
@@ -400,7 +412,7 @@ void initEnemy(){
 	//initializes enemy
 	for (int i = 0; i < ENEMYCOUNT; i++){
 		enemies[i].row = SCREENHEIGHT - 31;
-		enemies[i].col = -SCREENWIDTH;
+		enemies[i].worldCol = -SCREENWIDTH;
 		enemies[i].cdel = 1;
 		enemies[i].rdel = 1;
 		enemies[i].width = 32;
@@ -415,21 +427,21 @@ void spawnEnemy() {
 	//spawns enemies at random time intervals
 
 	int randEnemy = (rand() % 5); //generate a random enemy type
-	if (frameCounter % 250 == 0){
+	if (frameCounter % 100 == 0){
 		for (int i = 0; i < ENEMYCOUNT; i++){
 			//if an enemy is inactive and there currently isn't an enemy on screen, initalize one
-			if (enemies[i].active == 0 && activeEnemies < 3 && boxesCollected < 5){
+			if (enemies[i].active == 0 && activeEnemies < 3){
 				enemies[i].active = 1;
 				enemies[i].num = randEnemy;
 				activeEnemies += 1;
 				//picks a random enemy type to determine position
 				if (randNum % 2 == 0){ //enemy comes from the right
-					enemies[i].col = SCREENWIDTH;
+					enemies[i].worldCol = SCREENWIDTH;
 					enemies[i].cdel = -1;
 				} 
 				else {
 				 //enemy comes from the left 
-					enemies[i].col = 0;
+					enemies[i].worldCol = 0;
 					enemies[i].cdel = 1;
 				}
 				break;
@@ -439,13 +451,13 @@ void spawnEnemy() {
 }
 void updateEnemy(ENEMY * e){
 	if (e->active){
-		e->col += e->cdel;
-		if (e->col < 1 || e->col > SCREENWIDTH){ //enemy is at left or right edge
+		e->worldCol += e->cdel;
+		if (e->worldCol < 1 || e->worldCol > SCREENWIDTH){ //enemy is at left or right edge
 			e->active = 0;
 			activeEnemies -= 1;
 		}
 		//handle collision of doctor and an enemy
-		if (collision(e->col, e->row, e->width, e->height, doctor.col, doctor.row, doctor.width, doctor.height)){
+		if (collision(e->screenCol, e->row, e->width, e->height, doctor.screenCol, doctor.row, doctor.width, doctor.height)){
 			collided = 1;
 			blend = (rand() % 10) + 2;
 		} else {
@@ -455,17 +467,17 @@ void updateEnemy(ENEMY * e){
 		}
 		for (int i = 0; i < PILLCOUNT; i++){
 			//handle pill and enemy collision
-			if (pills[i].active && collision(e->col, e->row, e->width, e->height,
-			pills[i].col, pills[i].row, pills[i].width, pills[i].height) && collided != 1){
-				e->active = 0;
-				//e->hitsTaken += 1;
+			if (pills[i].active && collision(e->worldCol, e->row, e->width, e->height,
+			pills[i].worldCol, pills[i].row, pills[i].width, pills[i].height) && collided != 1){
+				//e->active = 0;
+				e->hitsTaken += 1;
 				pills[i].active = 0;
-				activeEnemies -= 1;
+				//activeEnemies -= 1;
 				//enemies 0, 2, 4 die after 1 hit
 
 				//trying to have variable amounts of attack but not working...
-/* 				if ((e->num % 2 == 0)) {
-					if (e->hitsTaken == 2){
+ 				if ((e->num % 2 == 0)) {
+					if (e->hitsTaken >= 1){
 						e->active = 0;
 						activeEnemies -= 1; 
 						enemiesRemaining--;
@@ -473,30 +485,32 @@ void updateEnemy(ENEMY * e){
 				}
 				//enemies 1, 3 die after 3 hits
 				else {
-					if (e->hitsTaken == 4){
+					if (e->hitsTaken >= 2){
 						e->active = 0; 
 						activeEnemies -= 1;
 						enemiesRemaining--;
 					}
-				} */
+				} 
 			}
-			if (cheat == 1 && collision(e->col, e->row, e->width, e->height,
-										doctor.col, doctor.row, doctor.width, doctor.height)){
+
+			if (cheat == 1 && collision(e->worldCol, e->row, e->width, e->height,
+										doctor.worldCol, doctor.row, doctor.width, doctor.height)){
 				e->hitsTaken += 1;
-				if (e->col == 240){
+				if (e->worldCol == 240){
 					e->active = 0;
 					activeEnemies -= 1;
 				} else {
 					e->cdel *= -1;
-					if (e->col < doctor.col){
-						e->col -= 5;
+					if (e->worldCol < doctor.worldCol){
+						e->worldCol -= 5;
 					} else {
-						e->col += 5;
+						e->worldCol += 5;
 					}
 				}
 			}
 		}
 	}
+	e->screenCol = e->worldCol - hOff;
 }
 
 void drawEnemy(){
@@ -521,7 +535,7 @@ void drawEnemy(){
 				r = 28;
 			}
 			shadowOAM[10 + i].attr0 = (ROWMASK & enemies[i].row) | ATTR0_4BPP | ATTR0_SQUARE;
-			shadowOAM[10 + i].attr1 = (COLMASK & enemies[i].col) | ATTR1_MEDIUM;
+			shadowOAM[10 + i].attr1 = (COLMASK & enemies[i].screenCol) | ATTR1_MEDIUM;
 			shadowOAM[10 + i].attr2 = ATTR2_TILEID(c,r);
 		} else {
 			shadowOAM[10 + i].attr0 = ATTR0_HIDE;
