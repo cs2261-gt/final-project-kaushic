@@ -1002,7 +1002,15 @@ typedef struct {
     int width;
     int height;
 }BOXCOUNTER;
-# 96 "game.h"
+
+typedef struct {
+    int row;
+    int col;
+    int width;
+    int height;
+    int active;
+}DOOR;
+# 102 "game.h"
 extern int vOff;
 extern int hOff;
 extern int hOff2;
@@ -1023,11 +1031,13 @@ extern int collided;
 extern ENEMY enemies[10];
 extern DOCSPRITE doctor;
 extern int livesRemaining;
-extern BOX boxes[3];
+extern BOX boxes[5];
 extern BOXCOUNTER boxbar;
 extern CONFETTI confetti[3];
 extern int frameCounter2;
 extern int cheat;
+extern int hitDoor;
+extern DOOR door;
 
 
 void initGame();
@@ -1038,6 +1048,9 @@ void updateBkgd();
 void initDoctor();
 void updateDoctor();
 void drawDoctor();
+void initDoctor2();
+void updateDoctor2();
+void drawDoctor2();
 
 void initEnemy();
 void spawnEnemy();
@@ -1060,6 +1073,9 @@ void initBox();
 void updateBox();
 void drawBox();
 
+void initIntroWin();
+void updateIntroWin();
+void drawIntroWin();
 void initWin();
 void updateWin();
 void drawWin();
@@ -1123,7 +1139,16 @@ void stopSound();
 
 extern const signed char bubblePop[2117];
 # 10 "game.c" 2
+# 1 "winBkgd.h" 1
+# 22 "winBkgd.h"
+extern const unsigned short winBkgdTiles[3680];
 
+
+extern const unsigned short winBkgdMap[1024];
+
+
+extern const unsigned short winBkgdPal[256];
+# 11 "game.c" 2
 
 OBJ_ATTR shadowOAM[128];
 DOCSPRITE doctor;
@@ -1131,8 +1156,9 @@ POWERUP powerups[5];
 CONFETTI confetti[3];
 ENEMY enemies[10];
 PILL pills[5];
-BOX boxes[3];
+BOX boxes[5];
 BOXCOUNTER boxbar;
+DOOR door;
 
 
 enum {SPRITERIGHT,SPRITELEFT, SPRITESHIELDRIGHT,SPRITESHIELDLEFT,SPRITEIDLE};
@@ -1155,7 +1181,7 @@ int blend;
 int livesRemaining;
 int num;
 int bubbles;
-
+int hitDoor;
 
 void initGame() {
  DMANow(3, skyPal, ((unsigned short *)0x5000000), 512/2);
@@ -1183,6 +1209,7 @@ void initGame() {
  prevBox = 0;
  activeEnemies = 0;
  cheat = 0;
+ hitDoor = 0;
  initDoctor();
  initEnemy();
  initPill();
@@ -1208,6 +1235,7 @@ void updateGame(){
   updatePowerup(&powerups[i]);
  }
 }
+
 void drawGame(){
  drawDoctor();
  drawPill();
@@ -1235,7 +1263,7 @@ void drawBar(){
 }
 
 void initBox(){
- for (int i = 0; i < 3; i++){
+ for (int i = 0; i < 5; i++){
   boxes[i].height = 8;
   boxes[i].width = 8;
   boxes[i].active = 0;
@@ -1253,7 +1281,7 @@ void updateBox(){
   prevBox = boxesCollected;
 }
 void drawBox(){
- for (int i = 0; i < 3; i++){
+ for (int i = 0; i < 5; i++){
   if (boxes[i].active){
    shadowOAM[61 + i].attr0 = (0xFF & boxes[i].row) | (0<<13) | (0<<14);
    shadowOAM[61 + i].attr1 = (0x1FF & boxes[i].col) | (2<<14);
@@ -1729,4 +1757,68 @@ void drawConfetti(){
    shadowOAM[40 + i].attr0 = (2<<8);
   }
  }
+}
+void initIntroWin(){
+ initDoctor2();
+}
+void updateIntroWin(){
+ updateDoctor2();
+}
+void drawIntroWin() {
+ drawDoctor2();
+}
+
+void initDoctor2(){
+ doctor.height = 32;
+ doctor.width = 32;
+ doctor.cdel = 1;
+ doctor.rdel = 1;
+ doctor.worldCol = 240/2 - doctor.height / 2 + hOff;
+ doctor.row = 160 - 31;
+ doctor.aniCounter = 0;
+ doctor.curFrame = 0;
+ doctor.numFrames = 3;
+ doctor.aniState = SPRITERIGHT;
+ doctor.pillTimer = 16;
+}
+void updateDoctor2(){
+ if (doctor.aniState != SPRITEIDLE){
+  doctor.prevAniState = doctor.aniState;
+  doctor.aniState = SPRITEIDLE;
+ }
+
+ if (doctor.aniCounter % 10 == 0) {
+  if (doctor.curFrame < doctor.numFrames - 1){
+   doctor.curFrame += 1;
+  } else {
+   doctor.curFrame = 0;
+  }
+ }
+
+ if((~((*(volatile unsigned short *)0x04000130)) & ((1<<4)))){
+  if (cheat == 1){
+   doctor.aniState = SPRITESHIELDRIGHT;
+  } else{
+   doctor.aniState = SPRITERIGHT;
+  }
+
+  doctor.worldCol += doctor.cdel;
+ }
+
+ if (doctor.aniState == SPRITEIDLE){
+            doctor.curFrame = 0;
+            doctor.aniState = doctor.prevAniState;
+        } else {
+            doctor.aniCounter += 1;
+    }
+ if (doctor.worldCol == 230){
+  hitDoor = 1;
+ }
+ doctor.screenCol = doctor.worldCol - hOff;
+}
+void drawDoctor2(){
+ (*(volatile unsigned short*)0x04000054) = 0;
+ shadowOAM[0].attr0 = doctor.row | (0<<13) | (0<<14);
+ shadowOAM[0].attr1 = doctor.screenCol | (2<<14);
+ shadowOAM[0].attr2 = ((doctor.aniState * 4)*32+(doctor.curFrame * 4));
 }

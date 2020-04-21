@@ -13,6 +13,7 @@
 #include "pauseSong.h"
 #include "gameSong.h"
 #include "winSong.h"
+#include "winBkgd.h"
 // Prototypes
 void initialize();
 void initialize();
@@ -28,12 +29,14 @@ void goToPause();
 void pause();
 void goToWin();
 void win();
+void goToWin2();
+void win2();
 void goToLose();
 void lose();
 
 
 // States
-enum {START, GAME, PAUSE, WIN, LOSE, INSTRUCTIONS};
+enum {START, GAME, PAUSE, WIN, WIN2, LOSE, INSTRUCTIONS};
 int state;
 
 // Button Variables
@@ -70,6 +73,9 @@ int main() {
                 break;
             case WIN:
                 win();
+                break;
+            case WIN2:
+                win2();
                 break;
             case LOSE:
                 lose();
@@ -171,10 +177,10 @@ void game() {
 		} else {
 			cheat = 0;
 		}
-	} else if (boxesCollected == 5){
+	} else if (boxesCollected == 1){
         stopSound();
         //play win music
-        playSoundA(winSong, WINSONGLEN, 0);
+        //playSoundA(winSong, WINSONGLEN, 0);
         goToWin();
         initWin();
     } else if (livesRemaining == 0){
@@ -213,6 +219,19 @@ void pause(){
 void goToWin(){
     REG_BG0HOFF = 0;
     REG_BG1HOFF = 0;
+    DMANow(3, winBkgdTiles, &CHARBLOCK[0], winBkgdTilesLen/2);
+    DMANow(3, winBkgdMap, &SCREENBLOCK[28], winBkgdMapLen/2);
+    DMANow(3, winBkgdTiles, &CHARBLOCK[1], winBkgdTilesLen/2);
+    DMANow(3, winBkgdMap, &SCREENBLOCK[30], winBkgdMapLen/2);
+    DMANow(3, winBkgdPal, PALETTE, 256);
+    hideSprites(); 
+    waitForVBlank();
+    DMANow(3, shadowOAM, OAM, 512);
+    state = WIN;
+}
+void goToWin2(){
+    REG_BG0HOFF = 0;
+    REG_BG1HOFF = 0;
     DMANow(3, winTiles, &CHARBLOCK[0], winTilesLen/2);
     DMANow(3, winMap, &SCREENBLOCK[28], winMapLen/2);
     DMANow(3, winTiles, &CHARBLOCK[1], winTilesLen/2);
@@ -221,9 +240,18 @@ void goToWin(){
     hideSprites(); 
     waitForVBlank();
     DMANow(3, shadowOAM, OAM, 512);
-    state = WIN;
+    state = WIN2;
 }
 void win(){
+    updateIntroWin();
+    drawIntroWin();
+    waitForVBlank();
+    DMANow(3,shadowOAM,OAM, 512);
+    if(hitDoor == 1){
+        goToWin2();
+    }
+}
+void win2(){
     updateWin();
     drawWin();
     waitForVBlank();

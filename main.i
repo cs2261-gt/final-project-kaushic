@@ -261,7 +261,15 @@ typedef struct {
     int width;
     int height;
 }BOXCOUNTER;
-# 96 "game.h"
+
+typedef struct {
+    int row;
+    int col;
+    int width;
+    int height;
+    int active;
+}DOOR;
+# 102 "game.h"
 extern int vOff;
 extern int hOff;
 extern int hOff2;
@@ -282,11 +290,13 @@ extern int collided;
 extern ENEMY enemies[10];
 extern DOCSPRITE doctor;
 extern int livesRemaining;
-extern BOX boxes[3];
+extern BOX boxes[5];
 extern BOXCOUNTER boxbar;
 extern CONFETTI confetti[3];
 extern int frameCounter2;
 extern int cheat;
+extern int hitDoor;
+extern DOOR door;
 
 
 void initGame();
@@ -297,6 +307,9 @@ void updateBkgd();
 void initDoctor();
 void updateDoctor();
 void drawDoctor();
+void initDoctor2();
+void updateDoctor2();
+void drawDoctor2();
 
 void initEnemy();
 void spawnEnemy();
@@ -319,6 +332,9 @@ void initBox();
 void updateBox();
 void drawBox();
 
+void initIntroWin();
+void updateIntroWin();
+void drawIntroWin();
 void initWin();
 void updateWin();
 void drawWin();
@@ -379,6 +395,16 @@ extern const signed char gameSong[1176230];
 
 extern const signed char winSong[38896];
 # 16 "main.c" 2
+# 1 "winBkgd.h" 1
+# 22 "winBkgd.h"
+extern const unsigned short winBkgdTiles[3680];
+
+
+extern const unsigned short winBkgdMap[1024];
+
+
+extern const unsigned short winBkgdPal[256];
+# 17 "main.c" 2
 
 void initialize();
 void initialize();
@@ -394,12 +420,14 @@ void goToPause();
 void pause();
 void goToWin();
 void win();
+void goToWin2();
+void win2();
 void goToLose();
 void lose();
 
 
 
-enum {START, GAME, PAUSE, WIN, LOSE, INSTRUCTIONS};
+enum {START, GAME, PAUSE, WIN, WIN2, LOSE, INSTRUCTIONS};
 int state;
 
 
@@ -436,6 +464,9 @@ int main() {
                 break;
             case WIN:
                 win();
+                break;
+            case WIN2:
+                win2();
                 break;
             case LOSE:
                 lose();
@@ -537,10 +568,10 @@ void game() {
   } else {
    cheat = 0;
   }
- } else if (boxesCollected == 5){
+ } else if (boxesCollected == 1){
         stopSound();
 
-        playSoundA(winSong, 38896, 0);
+
         goToWin();
         initWin();
     } else if (livesRemaining == 0){
@@ -579,6 +610,19 @@ void pause(){
 void goToWin(){
     (*(volatile unsigned short *)0x04000010) = 0;
     (*(volatile unsigned short *)0x04000014) = 0;
+    DMANow(3, winBkgdTiles, &((charblock *)0x6000000)[0], 7360/2);
+    DMANow(3, winBkgdMap, &((screenblock *)0x6000000)[28], 2048/2);
+    DMANow(3, winBkgdTiles, &((charblock *)0x6000000)[1], 7360/2);
+    DMANow(3, winBkgdMap, &((screenblock *)0x6000000)[30], 2048/2);
+    DMANow(3, winBkgdPal, ((unsigned short *)0x5000000), 256);
+    hideSprites();
+    waitForVBlank();
+    DMANow(3, shadowOAM, ((OBJ_ATTR*)(0x7000000)), 512);
+    state = WIN;
+}
+void goToWin2(){
+    (*(volatile unsigned short *)0x04000010) = 0;
+    (*(volatile unsigned short *)0x04000014) = 0;
     DMANow(3, winTiles, &((charblock *)0x6000000)[0], 1824/2);
     DMANow(3, winMap, &((screenblock *)0x6000000)[28], 2048/2);
     DMANow(3, winTiles, &((charblock *)0x6000000)[1], 1824/2);
@@ -587,9 +631,18 @@ void goToWin(){
     hideSprites();
     waitForVBlank();
     DMANow(3, shadowOAM, ((OBJ_ATTR*)(0x7000000)), 512);
-    state = WIN;
+    state = WIN2;
 }
 void win(){
+    updateIntroWin();
+    drawIntroWin();
+    waitForVBlank();
+    DMANow(3,shadowOAM,((OBJ_ATTR*)(0x7000000)), 512);
+    if(hitDoor == 1){
+        goToWin2();
+    }
+}
+void win2(){
     updateWin();
     drawWin();
     waitForVBlank();

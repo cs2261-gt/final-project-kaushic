@@ -79,7 +79,13 @@ typedef struct {
     int height;
 }BOXCOUNTER;
 
-
+typedef struct {
+    int row; 
+    int col;
+    int width;
+    int height;
+    int active; 
+}DOOR;
 
 //Constants
 #define PILLCOUNT 5
@@ -88,7 +94,7 @@ typedef struct {
 #define MAPHEIGHT 256
 #define MAPWIDTH 256
 #define LIFECOUNT 5
-#define BOXCOUNT 3
+#define BOXCOUNT 5
 #define CONFETTICOUNT 3
 
 
@@ -118,6 +124,8 @@ extern BOXCOUNTER boxbar;
 extern CONFETTI confetti[CONFETTICOUNT];
 extern int frameCounter2;
 extern int cheat;
+extern int hitDoor;
+extern DOOR door;
 
 //Prototypes
 void initGame();
@@ -128,6 +136,9 @@ void updateBkgd();
 void initDoctor();
 void updateDoctor();
 void drawDoctor();
+void initDoctor2();
+void updateDoctor2();
+void drawDoctor2();
 //enemies
 void initEnemy();
 void spawnEnemy();
@@ -150,6 +161,9 @@ void initBox();
 void updateBox();
 void drawBox();
 //win sequence
+void initIntroWin();
+void updateIntroWin();
+void drawIntroWin();
 void initWin();
 void updateWin();
 void drawWin();
@@ -157,3 +171,4 @@ void initConfetti();
 void fireConfetti();
 void updateConfetti(CONFETTI *);
 void drawConfetti();
+

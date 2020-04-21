@@ -7,7 +7,7 @@
 #include "collisionmap.h"
 #include "sound.h"
 #include "bubblePop.h"
-
+#include "winBkgd.h"
 //struct objects
 OBJ_ATTR shadowOAM[128];
 DOCSPRITE doctor;
@@ -17,6 +17,7 @@ ENEMY enemies[ENEMYCOUNT];
 PILL pills[PILLCOUNT];
 BOX boxes[BOXCOUNT]; 
 BOXCOUNTER boxbar;
+DOOR door;
 
 //enums
 enum {SPRITERIGHT,SPRITELEFT, SPRITESHIELDRIGHT,SPRITESHIELDLEFT,SPRITEIDLE};
@@ -39,7 +40,7 @@ int blend; //for alpha-blend when hit
 int livesRemaining;
 int num;
 int bubbles;
-
+int hitDoor;
 
 void initGame() {
 	DMANow(3, skyPal, PALETTE, skyPalLen/2);
@@ -67,6 +68,7 @@ void initGame() {
 	prevBox = 0;
 	activeEnemies = 0;
 	cheat = 0;
+	hitDoor = 0;
 	initDoctor();
 	initEnemy();
 	initPill();
@@ -92,6 +94,7 @@ void updateGame(){
 		updatePowerup(&powerups[i]);
 	}
 }
+
 void drawGame(){
 	drawDoctor();
 	drawPill();
@@ -613,4 +616,68 @@ void drawConfetti(){
 			shadowOAM[40 + i].attr0 = ATTR0_HIDE;
 		}
 	}
+}
+void initIntroWin(){
+	initDoctor2();
+}
+void updateIntroWin(){
+	updateDoctor2();
+}
+void drawIntroWin() {
+	drawDoctor2();
+}
+
+void initDoctor2(){
+	doctor.height = 32;
+	doctor.width = 32;
+	doctor.cdel = 1;
+	doctor.rdel = 1;
+	doctor.worldCol = SCREENWIDTH/2 - doctor.height / 2 + hOff;
+	doctor.row = SCREENHEIGHT - 31;
+	doctor.aniCounter = 0;
+	doctor.curFrame = 0;
+	doctor.numFrames = 3;
+	doctor.aniState = SPRITERIGHT;
+	doctor.pillTimer = 16;
+}
+void updateDoctor2(){
+	if (doctor.aniState != SPRITEIDLE){
+		doctor.prevAniState = doctor.aniState;
+		doctor.aniState = SPRITEIDLE;
+	}
+
+	if (doctor.aniCounter % 10 == 0) {
+		if (doctor.curFrame < doctor.numFrames - 1){
+			doctor.curFrame += 1;
+		} else {
+			doctor.curFrame = 0;
+		}
+	}
+
+	if(BUTTON_HELD(BUTTON_RIGHT)){
+		if (cheat == 1){
+			doctor.aniState = SPRITESHIELDRIGHT;
+		} else{
+			doctor.aniState = SPRITERIGHT;	
+		}
+		
+		doctor.worldCol += doctor.cdel;
+	}
+
+	if (doctor.aniState == SPRITEIDLE){
+            doctor.curFrame = 0;
+            doctor.aniState = doctor.prevAniState;
+        } else {
+            doctor.aniCounter += 1;
+    }
+	if (doctor.worldCol == 230){
+		hitDoor = 1;
+	}
+	doctor.screenCol = doctor.worldCol - hOff;
+}
+void drawDoctor2(){
+	REG_BLDY = 0;
+	shadowOAM[0].attr0 = doctor.row | ATTR0_4BPP | ATTR0_SQUARE;
+	shadowOAM[0].attr1 = doctor.screenCol | ATTR1_MEDIUM;
+	shadowOAM[0].attr2 = ATTR2_TILEID(doctor.curFrame *  4, doctor.aniState *  4);
 }
