@@ -2117,14 +2117,12 @@ updateDoctor2:
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
 	@ link register save eliminated.
-	ldr	r3, .L355
+	ldr	r3, .L352
 	ldr	r2, [r3, #28]
 	cmp	r2, #4
-	movne	r1, #4
-	strne	r2, [r3, #32]
-	strne	r1, [r3, #28]
-	ldr	r2, .L355+4
 	ldr	r1, [r3, #24]
+	strne	r2, [r3, #32]
+	ldr	r2, .L352+4
 	smull	ip, r0, r2, r1
 	asr	r2, r1, #31
 	rsb	r2, r2, r0, asr #2
@@ -2139,48 +2137,31 @@ updateDoctor2:
 	strlt	ip, [r3, #36]
 	strge	r2, [r3, #36]
 .L344:
-	ldr	r2, .L355+8
-	ldrh	r2, [r2, #48]
-	tst	r2, #16
-	ldr	r2, [r3, #4]
-	bne	.L346
-	ldr	r0, .L355+12
-	ldr	r0, [r0]
-	cmp	r0, #1
+	ldr	r2, .L352+8
+	ldr	r2, [r2]
+	cmp	r2, #1
 	moveq	r0, #2
 	movne	r0, #0
-	ldr	ip, [r3, #8]
+	ldmib	r3, {r2, ip}
 	add	r2, r2, ip
+	cmp	r2, #230
 	str	r0, [r3, #28]
-	str	r2, [r3, #4]
-.L348:
+	moveq	r0, #1
 	add	r1, r1, #1
 	str	r1, [r3, #24]
-.L349:
-	cmp	r2, #230
-	moveq	r0, #1
-	ldreq	r1, .L355+16
+	ldreq	r1, .L352+12
 	streq	r0, [r1]
-	ldr	r1, .L355+20
+	ldr	r1, .L352+16
 	ldr	r1, [r1]
+	str	r2, [r3, #4]
 	sub	r2, r2, r1
 	str	r2, [r3, #48]
 	bx	lr
-.L346:
-	ldr	r0, [r3, #28]
-	cmp	r0, #4
-	bne	.L348
-	mov	r0, #0
-	ldr	r1, [r3, #32]
-	str	r0, [r3, #36]
-	str	r1, [r3, #28]
-	b	.L349
-.L356:
+.L353:
 	.align	2
-.L355:
+.L352:
 	.word	doctor
 	.word	1717986919
-	.word	67109120
 	.word	cheat
 	.word	hitDoor
 	.word	hOff
@@ -2209,7 +2190,7 @@ drawDoctor2:
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
 	@ link register save eliminated.
-	ldr	r1, .L359
+	ldr	r1, .L356
 	ldr	r2, [r1, #48]
 	mvn	r2, r2, lsl #17
 	mov	r3, #67108864
@@ -2218,7 +2199,7 @@ drawDoctor2:
 	strh	r0, [r3, #84]	@ movhi
 	ldr	ip, [r1, #28]
 	ldr	r3, [r1, #36]
-	ldr	r0, .L359+4
+	ldr	r0, .L356+4
 	ldr	r1, [r1]
 	add	r3, r3, ip, lsl #5
 	lsl	r3, r3, #2
@@ -2226,9 +2207,9 @@ drawDoctor2:
 	strh	r1, [r0]	@ movhi
 	strh	r3, [r0, #4]	@ movhi
 	bx	lr
-.L360:
+.L357:
 	.align	2
-.L359:
+.L356:
 	.word	doctor
 	.word	shadowOAM
 	.size	drawDoctor2, .-drawDoctor2

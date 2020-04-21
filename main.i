@@ -569,7 +569,7 @@ void game() {
    cheat = 0;
   }
  } else if (boxesCollected == 1){
-        stopSound();
+
 
 
         goToWin();
@@ -639,6 +639,9 @@ void win(){
     waitForVBlank();
     DMANow(3,shadowOAM,((OBJ_ATTR*)(0x7000000)), 512);
     if(hitDoor == 1){
+        stopSound();
+
+        playSoundA(winSong, 38896, 0);
         goToWin2();
     }
 }

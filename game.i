@@ -1795,15 +1795,15 @@ void updateDoctor2(){
   }
  }
 
- if((~((*(volatile unsigned short *)0x04000130)) & ((1<<4)))){
-  if (cheat == 1){
-   doctor.aniState = SPRITESHIELDRIGHT;
-  } else{
-   doctor.aniState = SPRITERIGHT;
-  }
 
-  doctor.worldCol += doctor.cdel;
+ if (cheat == 1){
+  doctor.aniState = SPRITESHIELDRIGHT;
+ } else{
+  doctor.aniState = SPRITERIGHT;
  }
+
+ doctor.worldCol += doctor.cdel;
+
 
  if (doctor.aniState == SPRITEIDLE){
             doctor.curFrame = 0;
@@ -1811,6 +1811,7 @@ void updateDoctor2(){
         } else {
             doctor.aniCounter += 1;
     }
+
  if (doctor.worldCol == 230){
   hitDoor = 1;
  }

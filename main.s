@@ -775,6 +775,15 @@ win:
 	pop	{r4, lr}
 	bx	lr
 .L79:
+	ldr	r3, .L80+24
+	mov	lr, pc
+	bx	r3
+	mov	r2, #0
+	ldr	r1, .L80+28
+	ldr	r0, .L80+32
+	ldr	r3, .L80+36
+	mov	lr, pc
+	bx	r3
 	pop	{r4, lr}
 	b	goToWin2
 .L81:
@@ -786,6 +795,10 @@ win:
 	.word	DMANow
 	.word	shadowOAM
 	.word	hitDoor
+	.word	stopSound
+	.word	38896
+	.word	winSong
+	.word	playSoundA
 	.size	win, .-win
 	.align	2
 	.global	win2
@@ -979,17 +992,14 @@ game:
 	pop	{r4, lr}
 	b	goToPause
 .L105:
-	ldr	r3, .L107+44
-	mov	lr, pc
-	bx	r3
 	bl	goToWin
-	ldr	r3, .L107+48
+	ldr	r3, .L107+44
 	mov	lr, pc
 	bx	r3
 	pop	{r4, lr}
 	bx	lr
 .L106:
-	ldr	r3, .L107+44
+	ldr	r3, .L107+48
 	mov	lr, pc
 	bx	r3
 	mov	r2, r4
@@ -1014,8 +1024,8 @@ game:
 	.word	boxesCollected
 	.word	livesRemaining
 	.word	pauseSound
-	.word	stopSound
 	.word	initWin
+	.word	stopSound
 	.word	64298
 	.word	loseSong
 	.word	playSoundA

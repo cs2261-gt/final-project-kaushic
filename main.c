@@ -177,8 +177,8 @@ void game() {
 		} else {
 			cheat = 0;
 		}
-	} else if (boxesCollected == 1){
-        stopSound();
+	} else if (boxesCollected == 5){
+        //stopSound();
         //play win music
         //playSoundA(winSong, WINSONGLEN, 0);
         goToWin();
@@ -248,6 +248,9 @@ void win(){
     waitForVBlank();
     DMANow(3,shadowOAM,OAM, 512);
     if(hitDoor == 1){
+        stopSound();
+        //play win music
+        playSoundA(winSong, WINSONGLEN, 0);
         goToWin2();
     }
 }
