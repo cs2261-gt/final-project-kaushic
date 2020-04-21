@@ -1179,7 +1179,7 @@ void initGame() {
  pillSpeed = 2;
  collided = 0;
  blend = 0;
- livesRemaining = 1;
+ livesRemaining = 100;
  prevBox = 0;
  activeEnemies = 0;
  cheat = 0;
@@ -1347,6 +1347,33 @@ void updateDoctor(){
  }
 
 
+ for (int i = 0; i < 5; i++){
+  if (powerups[i].active && collision(powerups[i].screenCol, powerups[i].screenRow, powerups[i].width, powerups[i].height,
+   doctor.screenCol, doctor.row, doctor.width, doctor.height)){
+   powerups[i].active = 0;
+   activePowerups -= 1;
+   if (powerups[i].powerupType == 0){
+    boxesCollected += 1;
+
+   }
+   if (powerups[i].powerupType == 1){
+    pillSpeed = 1;
+   }
+   if (powerups[i].powerupType == 2){
+    pillSpeed = 4;
+   }
+   if (powerups[i].powerupType == 3){
+    bubbles = 0;
+   }
+   if (powerups[i].powerupType == 4){
+    bubbles = 1;
+    pillSpeed = 1;
+   }
+  }
+ }
+ if (collided == 1){
+  livesRemaining--;
+ }
  doctor.pillTimer+= pillSpeed;
  doctor.screenCol = doctor.worldCol - hOff;
 }
@@ -1404,31 +1431,6 @@ void updatePowerup(POWERUP *w){
   if (w->worldRow >= 160){
    w->active = 0;
    activePowerups -= 1;
-  }
-
-  for (int i = 0; i < 5; i++){
-   if (powerups[i].active && collision(powerups[i].screenCol, powerups[i].screenRow, powerups[i].width, powerups[i].height,
-    doctor.screenCol, doctor.row, doctor.width, doctor.height)){
-     w->active = 0;
-     activePowerups -= 1;
-     if (powerups[i].powerupType == 0){
-      boxesCollected += 1;
-      w->active = 0;
-     }
-     if (powerups[i].powerupType == 1){
-      pillSpeed = 1;
-     }
-     if (powerups[i].powerupType == 2){
-      pillSpeed = 4;
-     }
-     if (powerups[i].powerupType == 3){
-      bubbles = 0;
-     }
-     if (powerups[i].powerupType == 4){
-      bubbles = 1;
-      pillSpeed = 1;
-     }
-    }
   }
  }
  w->screenCol= w->worldCol - hOff;
@@ -1579,7 +1581,6 @@ void updateEnemy(ENEMY * e){
   } else {
    collided = 0;
    blend = 0;
-   livesRemaining--;
   }
   for (int i = 0; i < 5; i++){
 
@@ -1604,7 +1605,6 @@ void updateEnemy(ENEMY * e){
      if (e->hitsTaken >= 2){
       e->active = 0;
       activeEnemies -= 1;
-      enemiesRemaining--;
      }
     }
    }

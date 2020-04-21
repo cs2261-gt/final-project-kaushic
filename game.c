@@ -63,7 +63,7 @@ void initGame() {
 	pillSpeed = 2;
 	collided = 0;
 	blend = 0;
-	livesRemaining = 1;
+	livesRemaining = 100;
 	prevBox = 0;
 	activeEnemies = 0;
 	cheat = 0;
@@ -230,7 +230,34 @@ void updateDoctor(){
 		doctor.pillTimer = 0;
 	}
 	
-
+	//collision logic for powerups
+	for (int i = 0; i < POWERUPCOUNT; i++){
+		if (powerups[i].active && collision(powerups[i].screenCol, powerups[i].screenRow, powerups[i].width, powerups[i].height, 
+			doctor.screenCol, doctor.row, doctor.width, doctor.height)){
+			powerups[i].active = 0;
+			activePowerups -= 1;
+			if (powerups[i].powerupType == 0){ //health box
+				boxesCollected += 1;
+				//w->active = 0;
+			}
+			if (powerups[i].powerupType == 1){ //x0.5 speed
+				pillSpeed = 1; 
+			}
+			if (powerups[i].powerupType == 2){ //x2 speed
+				pillSpeed = 4;
+			}
+			if (powerups[i].powerupType == 3){ //^ attack/switch back to pills if bubbles
+				bubbles = 0;
+			}
+			if (powerups[i].powerupType == 4){ //change pills to bubbles
+				bubbles = 1;
+				pillSpeed = 1;
+			}
+		}
+	}		
+	if (collided == 1){
+		livesRemaining--;
+	}
 	doctor.pillTimer+= pillSpeed;
 	doctor.screenCol = doctor.worldCol - hOff;
 }
@@ -288,31 +315,6 @@ void updatePowerup(POWERUP *w){
 		if (w->worldRow >= SCREENHEIGHT){
 			w->active = 0;
 			activePowerups -= 1;
-		}
-		//collision logic for powerups
-		for (int i = 0; i < POWERUPCOUNT; i++){
-			if (powerups[i].active && collision(powerups[i].screenCol, powerups[i].screenRow, powerups[i].width, powerups[i].height, 
-				doctor.screenCol, doctor.row, doctor.width, doctor.height)){
-					w->active = 0;
-					activePowerups -= 1;
-					if (powerups[i].powerupType == 0){ //health box
-						boxesCollected += 1;
-						w->active = 0;
-					}
-					if (powerups[i].powerupType == 1){ //x0.5 speed
-						pillSpeed = 1; 
-					}
-					if (powerups[i].powerupType == 2){ //x2 speed
-						pillSpeed = 4;
-					}
-					if (powerups[i].powerupType == 3){ //^ attack/switch back to pills if bubbles
-						bubbles = 0;
-					}
-					if (powerups[i].powerupType == 4){ //change pills to bubbles
-						bubbles = 1;
-						pillSpeed = 1;
-					}
-				}
 		}
 	}
 	w->screenCol= w->worldCol - hOff;
@@ -463,7 +465,6 @@ void updateEnemy(ENEMY * e){
 		} else {
 			collided = 0;
 			blend = 0;
-			livesRemaining--;
 		}
 		for (int i = 0; i < PILLCOUNT; i++){
 			//handle pill and enemy collision
@@ -488,7 +489,6 @@ void updateEnemy(ENEMY * e){
 					if (e->hitsTaken >= 2){
 						e->active = 0; 
 						activeEnemies -= 1;
-						enemiesRemaining--;
 					}
 				} 
 			}
