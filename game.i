@@ -1710,9 +1710,9 @@ void initConfetti(){
 void fireConfetti(){
  int randColIndex = rand() % 220;
  if (randColIndex == 240){
-  randColIndex = 200;
+  randColIndex = 190;
  } else if (randColIndex == 0){
-  randColIndex = 0 + 20;
+  randColIndex = 0 + 40;
  }
  int randPow = (rand() % 3);
 
@@ -1724,7 +1724,6 @@ void fireConfetti(){
     confetti[i].active = 1;
     confetti[i].confettiType = randPow;
    }
-   break;
   }
  }
 }

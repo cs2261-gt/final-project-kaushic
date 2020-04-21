@@ -1854,44 +1854,47 @@ fireConfetti:
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
 	push	{r4, r5, r6, lr}
-	ldr	r5, .L304
+	ldr	r5, .L306
 	mov	lr, pc
 	bx	r5
-	ldr	r4, .L304+4
+	ldr	r4, .L306+4
 	smull	r2, r3, r4, r0
 	asr	r4, r0, #31
 	rsb	r4, r4, r3, asr #3
 	rsb	r3, r4, r4, lsl #3
 	rsb	r4, r4, r3, lsl #3
 	subs	r4, r0, r4, lsl #2
-	moveq	r4, #20
+	moveq	r4, #40
 	mov	lr, pc
 	bx	r5
-	ldr	r2, .L304+8
-	ldr	r3, [r2, #32]
-	cmp	r3, #0
-	bne	.L300
-	mov	r1, #1
-	mov	ip, #10
-	ldr	r3, .L304+12
-	smull	lr, r3, r0, r3
-	sub	r3, r3, r0, asr #31
-	add	r3, r3, r3, lsl r1
-	sub	r0, r0, r3
-	str	r4, [r2, #8]
-	str	r0, [r2, #36]
-	str	ip, [r2, #12]
-	str	r1, [r2, #32]
-.L300:
+	mov	ip, #1
+	mov	lr, #10
+	ldr	r2, .L306+8
+	smull	r3, r2, r0, r2
+	ldr	r3, .L306+12
+	sub	r2, r2, r0, asr #31
+	add	r2, r2, r2, lsl ip
+	sub	r2, r0, r2
+	add	r0, r3, #120
+.L303:
+	ldr	r1, [r3, #32]
+	cmp	r1, #0
+	streq	r4, [r3, #8]
+	streq	lr, [r3, #12]
+	streq	ip, [r3, #32]
+	streq	r2, [r3, #36]
+	add	r3, r3, #40
+	cmp	r3, r0
+	bne	.L303
 	pop	{r4, r5, r6, lr}
 	bx	lr
-.L305:
+.L307:
 	.align	2
-.L304:
+.L306:
 	.word	rand
 	.word	156180629
-	.word	confetti
 	.word	1431655766
+	.word	confetti
 	.size	fireConfetti, .-fireConfetti
 	.align	2
 	.global	updateWin
@@ -1905,37 +1908,37 @@ updateWin:
 	@ frame_needed = 0, uses_anonymous_args = 0
 	push	{r4, r5, r6, r7, r8, lr}
 	mov	r6, #0
-	ldr	r2, .L313
+	ldr	r2, .L315
 	ldr	r3, [r2]
-	ldr	r4, .L313+4
+	ldr	r4, .L315+4
 	add	r3, r3, #1
 	str	r3, [r2]
-	ldr	r7, .L313+8
+	ldr	r7, .L315+8
 	add	r5, r4, #120
-.L310:
+.L312:
 	bl	fireConfetti
 	ldr	r3, [r4, #32]
 	cmp	r3, #0
 	ldr	r3, [r4, #12]
-	beq	.L308
+	beq	.L310
 	ldr	r2, [r4, #20]
 	add	r3, r3, r2
 	cmp	r3, #159
 	str	r3, [r4, #12]
 	strgt	r6, [r4, #32]
-.L308:
+.L310:
 	ldr	r2, [r4, #8]
 	ldr	r1, [r7]
 	sub	r2, r2, r1
 	str	r2, [r4, #4]
 	str	r3, [r4], #40
 	cmp	r4, r5
-	bne	.L310
+	bne	.L312
 	pop	{r4, r5, r6, r7, r8, lr}
 	bx	lr
-.L314:
+.L316:
 	.align	2
-.L313:
+.L315:
 	.word	frameCounter2
 	.word	confetti
 	.word	hOff
@@ -1954,23 +1957,23 @@ updateConfetti:
 	ldr	r3, [r0, #32]
 	cmp	r3, #0
 	ldr	r2, [r0, #12]
-	beq	.L316
+	beq	.L318
 	ldr	r3, [r0, #20]
 	add	r2, r2, r3
 	cmp	r2, #159
 	movgt	r3, #0
 	str	r2, [r0, #12]
 	strgt	r3, [r0, #32]
-.L316:
-	ldr	r1, .L320
+.L318:
+	ldr	r1, .L322
 	ldr	r3, [r0, #8]
 	ldr	r1, [r1]
 	sub	r3, r3, r1
 	stm	r0, {r2, r3}
 	bx	lr
-.L321:
+.L323:
 	.align	2
-.L320:
+.L322:
 	.word	hOff
 	.size	updateConfetti, .-updateConfetti
 	.align	2
@@ -1986,35 +1989,35 @@ drawConfetti:
 	push	{r4, r5, r6, r7, lr}
 	mov	r6, #0
 	mov	lr, #512
-	ldr	r3, .L334
-	ldr	r2, .L334+4
-	ldr	r5, .L334+8
-	ldr	r4, .L334+12
+	ldr	r3, .L336
+	ldr	r2, .L336+4
+	ldr	r5, .L336+8
+	ldr	r4, .L336+12
 	add	ip, r3, #120
-.L326:
+.L328:
 	ldr	r1, [r3, #32]
 	cmp	r1, #1
 	strhne	lr, [r2]	@ movhi
-	beq	.L332
-.L325:
+	beq	.L334
+.L327:
 	add	r3, r3, #40
 	cmp	r3, ip
 	add	r2, r2, #8
-	bne	.L326
+	bne	.L328
 	pop	{r4, r5, r6, r7, lr}
 	bx	lr
-.L332:
+.L334:
 	ldr	r1, [r3, #36]
 	cmp	r1, #0
 	moveq	r7, #144
 	moveq	r6, #16
-	beq	.L324
+	beq	.L326
 	cmp	r1, #1
-	beq	.L328
+	beq	.L330
 	cmp	r1, #2
 	addne	r7, r6, #128
-	beq	.L333
-.L324:
+	beq	.L335
+.L326:
 	ldr	r1, [r3, #4]
 	ldrb	r0, [r3]	@ zero_extendqisi2
 	and	r1, r1, r5
@@ -2023,18 +2026,18 @@ drawConfetti:
 	strh	r7, [r2, #4]	@ movhi
 	strh	r1, [r2, #2]	@ movhi
 	strh	r0, [r2]	@ movhi
-	b	.L325
-.L328:
+	b	.L327
+.L330:
 	mov	r7, #148
 	mov	r6, #20
-	b	.L324
-.L333:
+	b	.L326
+.L335:
 	mov	r7, #152
 	mov	r6, #24
-	b	.L324
-.L335:
+	b	.L326
+.L337:
 	.align	2
-.L334:
+.L336:
 	.word	confetti
 	.word	shadowOAM+320
 	.word	511
@@ -2070,9 +2073,9 @@ initDoctor2:
 	mov	lr, #16
 	mov	ip, #32
 	mov	r0, #1
-	ldr	r3, .L339
+	ldr	r3, .L341
 	ldr	r1, [r3]
-	ldr	r3, .L339+4
+	ldr	r3, .L341+4
 	add	r1, r1, #104
 	str	r5, [r3]
 	str	r4, [r3, #40]
@@ -2087,9 +2090,9 @@ initDoctor2:
 	str	r2, [r3, #28]
 	pop	{r4, r5, lr}
 	bx	lr
-.L340:
+.L342:
 	.align	2
-.L339:
+.L341:
 	.word	hOff
 	.word	doctor
 	.size	initDoctor2, .-initDoctor2
@@ -2117,18 +2120,18 @@ updateDoctor2:
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
 	@ link register save eliminated.
-	ldr	r3, .L352
+	ldr	r3, .L354
 	ldr	r2, [r3, #28]
 	cmp	r2, #4
 	ldr	r1, [r3, #24]
 	strne	r2, [r3, #32]
-	ldr	r2, .L352+4
+	ldr	r2, .L354+4
 	smull	ip, r0, r2, r1
 	asr	r2, r1, #31
 	rsb	r2, r2, r0, asr #2
 	add	r2, r2, r2, lsl #2
 	subs	r2, r1, r2, lsl #1
-	bne	.L344
+	bne	.L346
 	ldr	r0, [r3, #40]
 	ldr	ip, [r3, #36]
 	sub	r0, r0, #1
@@ -2136,8 +2139,8 @@ updateDoctor2:
 	addlt	ip, ip, #1
 	strlt	ip, [r3, #36]
 	strge	r2, [r3, #36]
-.L344:
-	ldr	r2, .L352+8
+.L346:
+	ldr	r2, .L354+8
 	ldr	r2, [r2]
 	cmp	r2, #1
 	moveq	r0, #2
@@ -2149,17 +2152,17 @@ updateDoctor2:
 	moveq	r0, #1
 	add	r1, r1, #1
 	str	r1, [r3, #24]
-	ldreq	r1, .L352+12
+	ldreq	r1, .L354+12
 	streq	r0, [r1]
-	ldr	r1, .L352+16
+	ldr	r1, .L354+16
 	ldr	r1, [r1]
 	str	r2, [r3, #4]
 	sub	r2, r2, r1
 	str	r2, [r3, #48]
 	bx	lr
-.L353:
+.L355:
 	.align	2
-.L352:
+.L354:
 	.word	doctor
 	.word	1717986919
 	.word	cheat
@@ -2190,7 +2193,7 @@ drawDoctor2:
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
 	@ link register save eliminated.
-	ldr	r1, .L356
+	ldr	r1, .L358
 	ldr	r2, [r1, #48]
 	mvn	r2, r2, lsl #17
 	mov	r3, #67108864
@@ -2199,7 +2202,7 @@ drawDoctor2:
 	strh	r0, [r3, #84]	@ movhi
 	ldr	ip, [r1, #28]
 	ldr	r3, [r1, #36]
-	ldr	r0, .L356+4
+	ldr	r0, .L358+4
 	ldr	r1, [r1]
 	add	r3, r3, ip, lsl #5
 	lsl	r3, r3, #2
@@ -2207,9 +2210,9 @@ drawDoctor2:
 	strh	r1, [r0]	@ movhi
 	strh	r3, [r0, #4]	@ movhi
 	bx	lr
-.L357:
+.L359:
 	.align	2
-.L356:
+.L358:
 	.word	doctor
 	.word	shadowOAM
 	.size	drawDoctor2, .-drawDoctor2

@@ -569,9 +569,9 @@ void initConfetti(){
 void fireConfetti(){
 	int randColIndex = rand() % 220;
 	if (randColIndex == SCREENWIDTH){
-		randColIndex = 200;
+		randColIndex = 190;
 	} else if (randColIndex == 0){
-		randColIndex = 0 + 20;
+		randColIndex = 0 + 40;
 	}
 	int randPow = (rand() % 3);
 
@@ -583,7 +583,6 @@ void fireConfetti(){
 				confetti[i].active = 1;
 				confetti[i].confettiType = randPow;
 			}
-			break;
 		}
 	}
 }
@@ -671,7 +670,7 @@ void updateDoctor2(){
             doctor.aniCounter += 1;
     }
 	
-	if (doctor.worldCol == 230){
+	if (doctor.worldCol == 220){
 		hitDoor = 1;
 	}
 	doctor.screenCol = doctor.worldCol - hOff;
