@@ -91,13 +91,6 @@ void updateGame(){
 		spawnPowerup(); 
 		updatePowerup(&powerups[i]);
 	}
-	if (BUTTON_PRESSED(BUTTON_B)){
-		if (cheat == 0){
-			cheat = 1;
-		} else {
-			cheat = 0;
-		}
-	}
 }
 void drawGame(){
 	drawDoctor();
@@ -495,16 +488,17 @@ void updateEnemy(ENEMY * e){
 
 			if (cheat == 1 && collision(e->worldCol, e->row, e->width, e->height,
 										doctor.worldCol, doctor.row, doctor.width, doctor.height)){
+				
 				e->hitsTaken += 1;
 				if (e->worldCol == 240){
 					e->active = 0;
 					activeEnemies -= 1;
 				} else {
-					e->cdel *= -1;
+					//e->cdel *= -1;
 					if (e->worldCol < doctor.worldCol){
-						e->worldCol -= 5;
+						e->worldCol -= 75;
 					} else {
-						e->worldCol += 5;
+						e->worldCol += 75;
 					}
 				}
 			}

@@ -165,7 +165,13 @@ void game() {
     if (BUTTON_PRESSED(BUTTON_START)){
         pauseSound();
         goToPause();
-    } else if (boxesCollected == 3){
+    } else if (BUTTON_PRESSED(BUTTON_B)){
+		if (cheat == 0){
+			cheat = 1;
+		} else {
+			cheat = 0;
+		}
+	} else if (boxesCollected == 5){
         stopSound();
         //play win music
         playSoundA(winSong, WINSONGLEN, 0);

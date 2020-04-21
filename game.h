@@ -117,7 +117,7 @@ extern BOX boxes[BOXCOUNT];
 extern BOXCOUNTER boxbar;
 extern CONFETTI confetti[CONFETTICOUNT];
 extern int frameCounter2;
-
+extern int cheat;
 
 //Prototypes
 void initGame();

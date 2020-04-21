@@ -1027,7 +1027,7 @@ extern BOX boxes[3];
 extern BOXCOUNTER boxbar;
 extern CONFETTI confetti[3];
 extern int frameCounter2;
-
+extern int cheat;
 
 
 void initGame();
@@ -1206,13 +1206,6 @@ void updateGame(){
  for (int i = 0; i < 5; i++){
   spawnPowerup();
   updatePowerup(&powerups[i]);
- }
- if ((!(~(oldButtons)&((1<<1))) && (~buttons & ((1<<1))))){
-  if (cheat == 0){
-   cheat = 1;
-  } else {
-   cheat = 0;
-  }
  }
 }
 void drawGame(){
@@ -1611,16 +1604,17 @@ void updateEnemy(ENEMY * e){
 
    if (cheat == 1 && collision(e->worldCol, e->row, e->width, e->height,
           doctor.worldCol, doctor.row, doctor.width, doctor.height)){
+
     e->hitsTaken += 1;
     if (e->worldCol == 240){
      e->active = 0;
      activeEnemies -= 1;
     } else {
-     e->cdel *= -1;
+
      if (e->worldCol < doctor.worldCol){
-      e->worldCol -= 5;
+      e->worldCol -= 75;
      } else {
-      e->worldCol += 5;
+      e->worldCol += 75;
      }
     }
    }

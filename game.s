@@ -1457,13 +1457,10 @@ updateEnemy:
 	cmp	r0, #240
 	str	r3, [r4, #24]
 	beq	.L241
-	ldr	r2, [r6, #4]
-	ldr	r3, [r4, #8]
-	cmp	r0, r2
-	rsb	r3, r3, #0
-	sublt	r0, r0, #5
-	addge	r0, r0, #5
-	str	r3, [r4, #8]
+	ldr	r3, [r6, #4]
+	cmp	r0, r3
+	sublt	r0, r0, #75
+	addge	r0, r0, #75
 	str	r0, [r4, #4]
 	b	.L223
 .L238:
@@ -1525,9 +1522,9 @@ updateGame:
 	@ frame_needed = 0, uses_anonymous_args = 0
 	mov	ip, #67108864
 	push	{r4, r5, r6, r7, r8, lr}
-	ldr	r5, .L267
+	ldr	r5, .L262
 	ldr	r3, [r5]
-	ldr	r0, .L267+4
+	ldr	r0, .L262+4
 	tst	r3, #1
 	lsl	r2, r3, #16
 	addeq	r3, r3, r3, lsr #31
@@ -1541,14 +1538,14 @@ updateGame:
 	strh	r2, [ip, #16]	@ movhi
 	strheq	r3, [ip, #20]	@ movhi
 	bl	updateDoctor
-	ldr	r3, .L267+8
-	ldr	r1, .L267+12
+	ldr	r3, .L262+8
+	ldr	r1, .L262+12
 	ldr	r0, [r3]
 	ldr	r3, [r1]
 	cmp	r0, r3
 	ble	.L246
 	mov	lr, #1
-	ldr	ip, .L267+16
+	ldr	ip, .L262+16
 	sub	r2, r3, #1
 	add	r2, r2, r2, lsl #2
 	add	r2, ip, r2, lsl #2
@@ -1561,7 +1558,7 @@ updateGame:
 	str	lr, [r3, #16]
 .L246:
 	mov	lr, #0
-	ldr	r3, .L267+20
+	ldr	r3, .L262+20
 	str	r0, [r1]
 	ldr	r0, [r5]
 	add	r1, r3, #160
@@ -1587,7 +1584,7 @@ updateGame:
 	add	r3, r3, #32
 	cmp	r3, r1
 	bne	.L249
-	ldr	r4, .L267+24
+	ldr	r4, .L262+24
 	add	r6, r4, #400
 .L250:
 	bl	spawnEnemy
@@ -1597,8 +1594,8 @@ updateGame:
 	cmp	r4, r6
 	bne	.L250
 	mov	r8, #0
-	ldr	r4, .L267+28
-	ldr	r7, .L267+32
+	ldr	r4, .L262+28
+	ldr	r7, .L262+32
 	add	r6, r4, #200
 .L254:
 	bl	spawnPowerup
@@ -1623,25 +1620,11 @@ updateGame:
 	add	r4, r4, #40
 	cmp	r4, r6
 	bne	.L254
-	ldr	r3, .L267+36
-	ldrh	r3, [r3]
-	tst	r3, #2
-	beq	.L244
-	ldr	r3, .L267+40
-	ldrh	r3, [r3]
-	ands	r3, r3, #2
-	bne	.L244
-	ldr	r2, .L267+44
-	ldr	r1, [r2]
-	cmp	r1, #0
-	moveq	r3, #1
-	str	r3, [r2]
-.L244:
 	pop	{r4, r5, r6, r7, r8, lr}
 	bx	lr
-.L268:
+.L263:
 	.align	2
-.L267:
+.L262:
 	.word	hOff
 	.word	frameCounter
 	.word	boxesCollected
@@ -1651,9 +1634,6 @@ updateGame:
 	.word	enemies
 	.word	powerups
 	.word	activePowerups
-	.word	oldButtons
-	.word	buttons
-	.word	cheat
 	.size	updateGame, .-updateGame
 	.align	2
 	.global	drawEnemy
@@ -1667,44 +1647,44 @@ drawEnemy:
 	@ frame_needed = 0, uses_anonymous_args = 0
 	push	{r4, r5, r6, r7, r8, lr}
 	mov	r4, #0
-	ldr	r3, .L282
+	ldr	r3, .L277
 	mov	ip, #512
 	mov	r7, r4
-	ldr	r2, .L282+4
-	ldr	r6, .L282+8
-	ldr	r5, .L282+12
+	ldr	r2, .L277+4
+	ldr	r6, .L277+8
+	ldr	r5, .L277+12
 	add	r0, r3, #400
-	b	.L273
-.L272:
+	b	.L268
+.L267:
 	add	r3, r3, #40
 	cmp	r0, r3
 	add	r2, r2, #8
-	beq	.L281
-.L273:
+	beq	.L276
+.L268:
 	ldr	r1, [r3, #28]
 	cmp	r1, #1
 	strhne	ip, [r2, #80]	@ movhi
-	bne	.L272
+	bne	.L267
 	ldr	r1, [r3, #32]
 	cmp	r1, #0
-	beq	.L274
+	beq	.L269
 	cmp	r1, #1
-	beq	.L275
+	beq	.L270
 	cmp	r1, #2
-	beq	.L276
+	beq	.L271
 	cmp	r1, #3
-	beq	.L277
+	beq	.L272
 	cmp	r1, #4
 	addne	r8, r4, r7, lsl #5
 	moveq	r8, #904
 	moveq	r4, #8
 	moveq	r7, #28
-	b	.L271
-.L274:
+	b	.L266
+.L269:
 	mov	r8, #772
 	mov	r4, #4
 	mov	r7, #24
-.L271:
+.L266:
 	ldr	r1, [r3, #36]
 	ldrb	lr, [r3]	@ zero_extendqisi2
 	and	r1, r1, r6
@@ -1715,28 +1695,28 @@ drawEnemy:
 	strh	r1, [r2, #82]	@ movhi
 	strh	lr, [r2, #80]	@ movhi
 	add	r2, r2, #8
-	bne	.L273
-.L281:
+	bne	.L268
+.L276:
 	pop	{r4, r5, r6, r7, r8, lr}
 	bx	lr
-.L275:
+.L270:
 	mov	r8, #776
 	mov	r4, #8
 	mov	r7, #24
-	b	.L271
-.L277:
+	b	.L266
+.L272:
 	mov	r8, #900
 	mov	r4, #4
 	mov	r7, #28
-	b	.L271
-.L276:
+	b	.L266
+.L271:
 	mov	r8, #896
 	mov	r4, #0
 	mov	r7, #28
-	b	.L271
-.L283:
+	b	.L266
+.L278:
 	.align	2
-.L282:
+.L277:
 	.word	enemies
 	.word	shadowOAM
 	.word	511
@@ -1753,17 +1733,17 @@ drawGame:
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
 	mov	r3, #67108864
-	ldr	r1, .L286
-	ldr	r2, .L286+4
+	ldr	r1, .L281
+	ldr	r2, .L281+4
 	ldrh	r1, [r1]
 	push	{r4, r5, r6, lr}
 	ldr	ip, [r2, #28]
 	strh	r1, [r3, #84]	@ movhi
 	ldr	r3, [r2, #36]
 	ldr	r1, [r2, #48]
-	ldr	r5, .L286+8
+	ldr	r5, .L281+8
 	ldr	r0, [r2]
-	ldr	r4, .L286+12
+	ldr	r4, .L281+12
 	add	r3, r3, ip, lsl #5
 	orr	r2, r1, r5
 	lsl	r3, r3, #2
@@ -1774,7 +1754,7 @@ drawGame:
 	bl	drawEnemy
 	bl	drawPowerup
 	mov	r1, #20
-	ldr	r2, .L286+16
+	ldr	r2, .L281+16
 	ldm	r2, {r0, r3}
 	add	r2, r4, #480
 	orr	r3, r3, r5
@@ -1784,9 +1764,9 @@ drawGame:
 	strh	r0, [r2]	@ movhi
 	pop	{r4, r5, r6, lr}
 	b	drawBox
-.L287:
+.L282:
 	.align	2
-.L286:
+.L281:
 	.word	blend
 	.word	doctor
 	.word	-32768
@@ -1808,12 +1788,12 @@ initWin:
 	mov	r0, #1
 	mov	lr, #4
 	mov	r2, #16
-	ldr	r4, .L292
-	ldr	r3, .L292+4
+	ldr	r4, .L287
+	ldr	r3, .L287+4
 	mov	r1, ip
 	str	ip, [r4]
 	add	ip, r3, #120
-.L289:
+.L284:
 	str	r1, [r3]
 	str	r1, [r3, #4]
 	str	r0, [r3, #16]
@@ -1823,12 +1803,12 @@ initWin:
 	str	r0, [r3, #32]
 	add	r3, r3, #40
 	cmp	r3, ip
-	bne	.L289
+	bne	.L284
 	pop	{r4, lr}
 	bx	lr
-.L293:
+.L288:
 	.align	2
-.L292:
+.L287:
 	.word	frameCounter2
 	.word	confetti
 	.size	initWin, .-initWin
@@ -1847,9 +1827,9 @@ initConfetti:
 	mov	r1, #1
 	mov	lr, #4
 	mov	r2, #16
-	ldr	r3, .L298
+	ldr	r3, .L293
 	add	ip, r3, #120
-.L295:
+.L290:
 	str	r0, [r3]
 	str	r0, [r3, #4]
 	str	r1, [r3, #16]
@@ -1859,12 +1839,12 @@ initConfetti:
 	str	r1, [r3, #32]
 	add	r3, r3, #40
 	cmp	r3, ip
-	bne	.L295
+	bne	.L290
 	ldr	lr, [sp], #4
 	bx	lr
-.L299:
+.L294:
 	.align	2
-.L298:
+.L293:
 	.word	confetti
 	.size	initConfetti, .-initConfetti
 	.align	2
@@ -1878,10 +1858,10 @@ fireConfetti:
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
 	push	{r4, r5, r6, lr}
-	ldr	r5, .L304
+	ldr	r5, .L299
 	mov	lr, pc
 	bx	r5
-	ldr	r4, .L304+4
+	ldr	r4, .L299+4
 	smull	r2, r3, r4, r0
 	asr	r4, r0, #31
 	rsb	r4, r4, r3, asr #3
@@ -1891,13 +1871,13 @@ fireConfetti:
 	moveq	r4, #20
 	mov	lr, pc
 	bx	r5
-	ldr	r2, .L304+8
+	ldr	r2, .L299+8
 	ldr	r3, [r2, #32]
 	cmp	r3, #0
-	bne	.L300
+	bne	.L295
 	mov	r1, #1
 	mov	ip, #10
-	ldr	r3, .L304+12
+	ldr	r3, .L299+12
 	smull	lr, r3, r0, r3
 	sub	r3, r3, r0, asr #31
 	add	r3, r3, r3, lsl r1
@@ -1906,12 +1886,12 @@ fireConfetti:
 	str	r0, [r2, #36]
 	str	ip, [r2, #12]
 	str	r1, [r2, #32]
-.L300:
+.L295:
 	pop	{r4, r5, r6, lr}
 	bx	lr
-.L305:
+.L300:
 	.align	2
-.L304:
+.L299:
 	.word	rand
 	.word	156180629
 	.word	confetti
@@ -1929,37 +1909,37 @@ updateWin:
 	@ frame_needed = 0, uses_anonymous_args = 0
 	push	{r4, r5, r6, r7, r8, lr}
 	mov	r6, #0
-	ldr	r2, .L313
+	ldr	r2, .L308
 	ldr	r3, [r2]
-	ldr	r4, .L313+4
+	ldr	r4, .L308+4
 	add	r3, r3, #1
 	str	r3, [r2]
-	ldr	r7, .L313+8
+	ldr	r7, .L308+8
 	add	r5, r4, #120
-.L310:
+.L305:
 	bl	fireConfetti
 	ldr	r3, [r4, #32]
 	cmp	r3, #0
 	ldr	r3, [r4, #12]
-	beq	.L308
+	beq	.L303
 	ldr	r2, [r4, #20]
 	add	r3, r3, r2
 	cmp	r3, #159
 	str	r3, [r4, #12]
 	strgt	r6, [r4, #32]
-.L308:
+.L303:
 	ldr	r2, [r4, #8]
 	ldr	r1, [r7]
 	sub	r2, r2, r1
 	str	r2, [r4, #4]
 	str	r3, [r4], #40
 	cmp	r4, r5
-	bne	.L310
+	bne	.L305
 	pop	{r4, r5, r6, r7, r8, lr}
 	bx	lr
-.L314:
+.L309:
 	.align	2
-.L313:
+.L308:
 	.word	frameCounter2
 	.word	confetti
 	.word	hOff
@@ -1978,23 +1958,23 @@ updateConfetti:
 	ldr	r3, [r0, #32]
 	cmp	r3, #0
 	ldr	r2, [r0, #12]
-	beq	.L316
+	beq	.L311
 	ldr	r3, [r0, #20]
 	add	r2, r2, r3
 	cmp	r2, #159
 	movgt	r3, #0
 	str	r2, [r0, #12]
 	strgt	r3, [r0, #32]
-.L316:
-	ldr	r1, .L320
+.L311:
+	ldr	r1, .L315
 	ldr	r3, [r0, #8]
 	ldr	r1, [r1]
 	sub	r3, r3, r1
 	stm	r0, {r2, r3}
 	bx	lr
-.L321:
+.L316:
 	.align	2
-.L320:
+.L315:
 	.word	hOff
 	.size	updateConfetti, .-updateConfetti
 	.align	2
@@ -2010,35 +1990,35 @@ drawConfetti:
 	push	{r4, r5, r6, r7, lr}
 	mov	r6, #0
 	mov	lr, #512
-	ldr	r3, .L334
-	ldr	r2, .L334+4
-	ldr	r5, .L334+8
-	ldr	r4, .L334+12
+	ldr	r3, .L329
+	ldr	r2, .L329+4
+	ldr	r5, .L329+8
+	ldr	r4, .L329+12
 	add	ip, r3, #120
-.L326:
+.L321:
 	ldr	r1, [r3, #32]
 	cmp	r1, #1
 	strhne	lr, [r2]	@ movhi
-	beq	.L332
-.L325:
+	beq	.L327
+.L320:
 	add	r3, r3, #40
 	cmp	r3, ip
 	add	r2, r2, #8
-	bne	.L326
+	bne	.L321
 	pop	{r4, r5, r6, r7, lr}
 	bx	lr
-.L332:
+.L327:
 	ldr	r1, [r3, #36]
 	cmp	r1, #0
 	moveq	r7, #144
 	moveq	r6, #16
-	beq	.L324
+	beq	.L319
 	cmp	r1, #1
-	beq	.L328
+	beq	.L323
 	cmp	r1, #2
 	addne	r7, r6, #128
-	beq	.L333
-.L324:
+	beq	.L328
+.L319:
 	ldr	r1, [r3, #4]
 	ldrb	r0, [r3]	@ zero_extendqisi2
 	and	r1, r1, r5
@@ -2047,18 +2027,18 @@ drawConfetti:
 	strh	r7, [r2, #4]	@ movhi
 	strh	r1, [r2, #2]	@ movhi
 	strh	r0, [r2]	@ movhi
-	b	.L325
-.L328:
+	b	.L320
+.L323:
 	mov	r7, #148
 	mov	r6, #20
-	b	.L324
-.L333:
+	b	.L319
+.L328:
 	mov	r7, #152
 	mov	r6, #24
-	b	.L324
-.L335:
+	b	.L319
+.L330:
 	.align	2
-.L334:
+.L329:
 	.word	confetti
 	.word	shadowOAM+320
 	.word	511

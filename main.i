@@ -286,7 +286,7 @@ extern BOX boxes[3];
 extern BOXCOUNTER boxbar;
 extern CONFETTI confetti[3];
 extern int frameCounter2;
-
+extern int cheat;
 
 
 void initGame();
@@ -531,7 +531,13 @@ void game() {
     if ((!(~(oldButtons)&((1<<3))) && (~buttons & ((1<<3))))){
         pauseSound();
         goToPause();
-    } else if (boxesCollected == 3){
+    } else if ((!(~(oldButtons)&((1<<1))) && (~buttons & ((1<<1))))){
+  if (cheat == 0){
+   cheat = 1;
+  } else {
+   cheat = 0;
+  }
+ } else if (boxesCollected == 5){
         stopSound();
 
         playSoundA(winSong, 38896, 0);

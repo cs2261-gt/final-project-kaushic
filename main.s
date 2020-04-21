@@ -797,78 +797,92 @@ game:
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
 	push	{r4, lr}
-	ldr	r3, .L92
+	ldr	r3, .L97
 	mov	lr, pc
 	bx	r3
-	ldr	r3, .L92+4
+	ldr	r3, .L97+4
 	mov	lr, pc
 	bx	r3
-	ldr	r3, .L92+8
+	ldr	r3, .L97+8
 	mov	lr, pc
 	bx	r3
-	ldr	r4, .L92+12
+	ldr	r4, .L97+12
 	mov	r3, #512
 	mov	r2, #117440512
 	mov	r0, #3
-	ldr	r1, .L92+16
+	ldr	r1, .L97+16
 	mov	lr, pc
 	bx	r4
-	ldr	r3, .L92+20
+	ldr	r3, .L97+20
 	ldrh	r3, [r3]
 	tst	r3, #8
 	beq	.L82
-	ldr	r3, .L92+24
-	ldrh	r3, [r3]
-	tst	r3, #8
-	beq	.L89
+	ldr	r2, .L97+24
+	ldrh	r2, [r2]
+	tst	r2, #8
+	beq	.L94
 .L82:
-	ldr	r3, .L92+28
+	tst	r3, #2
+	beq	.L83
+	ldr	r3, .L97+24
+	ldrh	r3, [r3]
+	ands	r3, r3, #2
+	bne	.L83
+	ldr	r2, .L97+28
+	ldr	r1, [r2]
+	cmp	r1, #0
+	moveq	r3, #1
+	pop	{r4, lr}
+	str	r3, [r2]
+	bx	lr
+.L83:
+	ldr	r3, .L97+32
 	ldr	r3, [r3]
-	cmp	r3, #3
-	beq	.L90
-	ldr	r3, .L92+32
+	cmp	r3, #5
+	beq	.L95
+	ldr	r3, .L97+36
 	ldr	r4, [r3]
 	cmp	r4, #0
-	beq	.L91
+	beq	.L96
 	pop	{r4, lr}
 	bx	lr
-.L91:
-	ldr	r3, .L92+36
-	mov	lr, pc
-	bx	r3
-	mov	r2, r4
-	ldr	r1, .L92+40
-	ldr	r0, .L92+44
-	ldr	r3, .L92+48
-	mov	lr, pc
-	bx	r3
-	pop	{r4, lr}
-	b	goToLose
-.L89:
-	ldr	r3, .L92+52
+.L94:
+	ldr	r3, .L97+40
 	mov	lr, pc
 	bx	r3
 	pop	{r4, lr}
 	b	goToPause
-.L90:
-	ldr	r3, .L92+36
+.L95:
+	ldr	r3, .L97+44
 	mov	lr, pc
 	bx	r3
 	mov	r2, #0
-	ldr	r1, .L92+56
-	ldr	r0, .L92+60
-	ldr	r3, .L92+48
+	ldr	r1, .L97+48
+	ldr	r0, .L97+52
+	ldr	r3, .L97+56
 	mov	lr, pc
 	bx	r3
 	bl	goToWin
-	ldr	r3, .L92+64
+	ldr	r3, .L97+60
 	mov	lr, pc
 	bx	r3
 	pop	{r4, lr}
 	bx	lr
-.L93:
+.L96:
+	ldr	r3, .L97+44
+	mov	lr, pc
+	bx	r3
+	mov	r2, r4
+	ldr	r1, .L97+64
+	ldr	r0, .L97+68
+	ldr	r3, .L97+56
+	mov	lr, pc
+	bx	r3
+	pop	{r4, lr}
+	b	goToLose
+.L98:
 	.align	2
-.L92:
+.L97:
 	.word	updateGame
 	.word	drawGame
 	.word	waitForVBlank
@@ -876,16 +890,17 @@ game:
 	.word	shadowOAM
 	.word	oldButtons
 	.word	buttons
+	.word	cheat
 	.word	boxesCollected
 	.word	livesRemaining
-	.word	stopSound
-	.word	64298
-	.word	loseSong
-	.word	playSoundA
 	.word	pauseSound
+	.word	stopSound
 	.word	38896
 	.word	winSong
+	.word	playSoundA
 	.word	initWin
+	.word	64298
+	.word	loseSong
 	.size	game, .-game
 	.section	.text.startup,"ax",%progbits
 	.align	2
@@ -900,79 +915,79 @@ main:
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
 	push	{r4, r7, fp, lr}
-	ldr	r6, .L108
-	ldr	r7, .L108+4
-	ldr	r3, .L108+8
+	ldr	r6, .L113
+	ldr	r7, .L113+4
+	ldr	r3, .L113+8
 	mov	lr, pc
 	bx	r3
-	ldr	r5, .L108+12
+	ldr	r5, .L113+12
 	ldr	r2, [r6]
 	ldrh	r0, [r7]
-	ldr	fp, .L108+16
-	ldr	r10, .L108+20
-	ldr	r9, .L108+24
-	ldr	r8, .L108+28
-	ldr	r4, .L108+32
-.L96:
+	ldr	fp, .L113+16
+	ldr	r10, .L113+20
+	ldr	r9, .L113+24
+	ldr	r8, .L113+28
+	ldr	r4, .L113+32
+.L101:
 	strh	r0, [r5]	@ movhi
 	ldrh	r3, [r4, #48]
 	strh	r3, [r7]	@ movhi
 	cmp	r2, #5
 	ldrls	pc, [pc, r2, asl #2]
-	b	.L105
-.L98:
-	.word	.L103
+	b	.L110
+.L103:
+	.word	.L108
+	.word	.L107
+	.word	.L106
+	.word	.L105
+	.word	.L104
 	.word	.L102
-	.word	.L101
-	.word	.L100
-	.word	.L99
-	.word	.L97
-.L97:
+.L102:
 	mov	lr, pc
 	bx	r10
 	ldr	r2, [r6]
 	ldrh	r0, [r7]
-	b	.L96
-.L99:
+	b	.L101
+.L104:
 	tst	r0, #8
-	beq	.L105
-	ldr	r3, .L108+36
+	beq	.L110
+	ldr	r3, .L113+36
 	mov	lr, pc
 	bx	r3
 	ldr	r2, [r6]
 	ldrh	r0, [r7]
-	b	.L96
-.L100:
-	ldr	r3, .L108+40
+	b	.L101
+.L105:
+	ldr	r3, .L113+40
 	mov	lr, pc
 	bx	r3
 	ldr	r2, [r6]
 	ldrh	r0, [r7]
-	b	.L96
-.L101:
+	b	.L101
+.L106:
 	mov	lr, pc
 	bx	r8
 	ldr	r2, [r6]
 	ldrh	r0, [r7]
-	b	.L96
-.L102:
+	b	.L101
+.L107:
 	mov	lr, pc
 	bx	r9
 	ldr	r2, [r6]
 	ldrh	r0, [r7]
-	b	.L96
-.L103:
+	b	.L101
+.L108:
 	mov	lr, pc
 	bx	fp
 	ldr	r2, [r6]
 	ldrh	r0, [r7]
-	b	.L96
-.L105:
+	b	.L101
+.L110:
 	mov	r0, r3
-	b	.L96
-.L109:
+	b	.L101
+.L114:
 	.align	2
-.L108:
+.L113:
 	.word	state
 	.word	buttons
 	.word	initialize
@@ -997,14 +1012,14 @@ lose:
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
 	@ link register save eliminated.
-	ldr	r3, .L112
+	ldr	r3, .L117
 	ldrh	r3, [r3]
 	tst	r3, #8
 	bxeq	lr
 	b	lose.part.0
-.L113:
+.L118:
 	.align	2
-.L112:
+.L117:
 	.word	oldButtons
 	.size	lose, .-lose
 	.comm	vOff,4,4
