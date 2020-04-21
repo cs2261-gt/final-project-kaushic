@@ -977,7 +977,7 @@ game:
 .L93:
 	ldr	r3, .L107+32
 	ldr	r3, [r3]
-	cmp	r3, #1
+	cmp	r3, #5
 	beq	.L105
 	ldr	r3, .L107+36
 	ldr	r4, [r3]

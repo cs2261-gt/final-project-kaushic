@@ -568,7 +568,7 @@ void game() {
   } else {
    cheat = 0;
   }
- } else if (boxesCollected == 1){
+ } else if (boxesCollected == 5){
 
 
 
