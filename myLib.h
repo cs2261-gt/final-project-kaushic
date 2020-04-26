@@ -355,5 +355,8 @@ typedef struct{
 // Miscellaneous Functions
 int collision(int colA, int rowA, int widthA, int heightA, int colB, int rowB, int widthB, int heightB);
 
-
+#define REG_BLDCNT (*(volatile unsigned short*)0x04000050)
+#define REG_BLDY   (*(volatile unsigned short*)0x04000054)
+#define BLD_OBJa            (1<<4)
+#define BLD_WHITE           (1<<7)
 #endif
